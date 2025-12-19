@@ -1,0 +1,16 @@
+node_modules
+.next
+dist
+build
+*.log
+.DS_Store
+coverage
+.vscode
+.idea
+*.min.js
+*.min.css
+src-tauri/target
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
