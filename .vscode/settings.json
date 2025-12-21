@@ -36,6 +36,9 @@
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer",
     "editor.formatOnSave": true
-  }
+  },
+
+  // CSS 린터: Tailwind 지시어 허용
+  "css.lint.unknownAtRules": "ignore"
 }
 
