@@ -1,7 +1,7 @@
 /**
  * Log levels supported by the application
  */
-export type LogLevel = "debug" | "info" | "warn" | "error";
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 /**
  * Interface for structured log messages
@@ -22,7 +22,7 @@ class Logger {
 
   constructor() {
     // Check if we are in development mode
-    this.isDev = process.env.NODE_ENV === "development";
+    this.isDev = process.env.NODE_ENV === 'development';
   }
 
   /**
@@ -31,7 +31,7 @@ class Logger {
   private formatLog(
     level: LogLevel,
     message: string,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ): LogMessage {
     return {
       level,
@@ -44,11 +44,7 @@ class Logger {
   /**
    * Internal handler to output logs
    */
-  private log(
-    level: LogLevel,
-    message: string,
-    context?: Record<string, unknown>
-  ) {
+  private log(level: LogLevel, message: string, context?: Record<string, unknown>) {
     if (this.isDev) {
       const style = this.getConsoleStyle(level);
       const args = [`%c[${level.toUpperCase()}] ${message}`, style];
@@ -59,16 +55,16 @@ class Logger {
 
       // Map to appropriate console method
       switch (level) {
-        case "debug":
+        case 'debug':
           console.debug(...args);
           break;
-        case "info":
+        case 'info':
           console.info(...args);
           break;
-        case "warn":
+        case 'warn':
           console.warn(...args);
           break;
-        case "error":
+        case 'error':
           console.error(...args);
           break;
       }
@@ -79,33 +75,33 @@ class Logger {
 
   private getConsoleStyle(level: LogLevel): string {
     switch (level) {
-      case "debug":
-        return "color: #888; font-weight: bold";
-      case "info":
-        return "color: #00bfff; font-weight: bold";
-      case "warn":
-        return "color: #ffd700; font-weight: bold";
-      case "error":
-        return "color: #ff0000; font-weight: bold";
+      case 'debug':
+        return 'color: #888; font-weight: bold';
+      case 'info':
+        return 'color: #00bfff; font-weight: bold';
+      case 'warn':
+        return 'color: #ffd700; font-weight: bold';
+      case 'error':
+        return 'color: #ff0000; font-weight: bold';
       default:
-        return "";
+        return '';
     }
   }
 
   public debug(message: string, context?: Record<string, unknown>) {
-    this.log("debug", message, context);
+    this.log('debug', message, context);
   }
 
   public info(message: string, context?: Record<string, unknown>) {
-    this.log("info", message, context);
+    this.log('info', message, context);
   }
 
   public warn(message: string, context?: Record<string, unknown>) {
-    this.log("warn", message, context);
+    this.log('warn', message, context);
   }
 
   public error(message: string, context?: Record<string, unknown>) {
-    this.log("error", message, context);
+    this.log('error', message, context);
   }
 }
 
