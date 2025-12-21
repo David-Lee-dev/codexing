@@ -1,6 +1,28 @@
+import { invoke } from '@tauri-apps/api/core';
 import { Note } from '../types/note';
 
+export interface AppConfig {
+  storage_path: string | null;
+  is_onboarding_complete: boolean;
+}
+
 const STORAGE_KEY = 'memo_app_notes';
+
+/**
+ * Fetches the app configuration from the backend.
+ */
+export async function getConfig(): Promise<AppConfig> {
+  try {
+    return await invoke<AppConfig>('get_config');
+  } catch (error) {
+    console.error('Failed to fetch config:', error);
+    // Return default config on error
+    return {
+      storage_path: null,
+      is_onboarding_complete: false,
+    };
+  }
+}
 
 /**
  * Saves a note to the local file system.

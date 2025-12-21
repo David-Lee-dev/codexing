@@ -1,60 +1,52 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import MinimalEditor from '../components/editor/MinimalEditor';
-import { useAutoSave } from '../components/editor/useAutoSave';
-import { loadNotes } from '../utils/tauri-api';
+import { OnboardingScreen } from '../components/onboarding/OnboardingScreen';
+import { MemoView } from '../components/memo/MemoView';
+import { getConfig } from '../utils/tauri-api';
 
 export default function Home() {
-  const [content, setContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isOnboarding, setIsOnboarding] = useState(false);
 
-  // 초기 메모 로드
   useEffect(() => {
-    const loadInitialContent = async () => {
+    const checkConfig = async () => {
       try {
-        const notes = await loadNotes();
-        // 가장 최근 메모를 불러옴 (간단한 구현)
-        if (notes.length > 0) {
-          const latestNote = notes.sort(
-            (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
-          )[0];
-          setContent(latestNote.content);
+        const config = await getConfig();
+        if (!config.storage_path) {
+          setIsOnboarding(true);
         }
       } catch (error) {
-        console.error('Failed to load notes:', error);
+        console.error('Failed to check config:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadInitialContent();
+    checkConfig();
   }, []);
 
-  // 자동 저장 훅
-  const { isSaving, lastSaved } = useAutoSave({
-    content,
-    debounceMs: 30000, // 30초
-  });
+  const handleStorageSelect = () => {
+    // 1단계 Mock: 온보딩 완료 처리
+    setIsOnboarding(false);
+  };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-gray-500">로딩 중...</p>
+      <div className="flex items-center justify-center h-screen bg-white dark:bg-gray-900">
+        <p className="text-gray-500 font-light animate-pulse">Codexing...</p>
       </div>
     );
   }
 
-  return (
-    <main className="w-full h-screen">
-      <MinimalEditor content={content} onUpdate={setContent} placeholder="메모를 입력하세요..." />
-      {/* 비침습적인 저장 상태 표시 */}
-      {isSaving && <div className="fixed bottom-4 right-4 text-sm text-gray-500">저장 중...</div>}
-      {lastSaved && !isSaving && (
-        <div className="fixed bottom-4 right-4 text-xs text-gray-400">
-          저장됨: {lastSaved.toLocaleTimeString()}
-        </div>
-      )}
-    </main>
-  );
+  if (isOnboarding) {
+    return (
+      <div className="animate-in fade-in duration-700">
+        <OnboardingScreen onSelectStorage={handleStorageSelect} />
+      </div>
+    );
+  }
+
+  // 저장소 설정이 완료된 경우 MemoView 렌더링
+  return <MemoView />;
 }
