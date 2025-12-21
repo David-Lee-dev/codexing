@@ -24,6 +24,9 @@ dist-ssr
 
 .vscode/*
 
+.env
+.env.*
+
 # Custom Speckit - Temporary Files
 .specify/*
 .cursor/*
