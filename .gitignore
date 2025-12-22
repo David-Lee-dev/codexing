@@ -27,9 +27,14 @@ dist-ssr
 .env
 .env.*
 
-# Custom Speckit - Temporary Files
-.specify/*
-.cursor/*
+# Custom Speckit
+.specify/
+.cursor/
+
+# Rust/Tauri
+src-tauri/target/
+src-tauri/gen/
+!src-tauri/gen/schemas/
 
 # Exceptions
 !.vscode/extensions.json
