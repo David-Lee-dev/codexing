@@ -26,9 +26,16 @@ export default function Home() {
     checkConfig();
   }, []);
 
-  const handleStorageSelect = () => {
-    // 1단계 Mock: 온보딩 완료 처리
-    setIsOnboarding(false);
+  const handleStorageSelect = async () => {
+    // 저장소 선택 완료 후 설정 다시 확인
+    try {
+      const config = await getConfig();
+      if (config.storage_path) {
+        setIsOnboarding(false);
+      }
+    } catch (error) {
+      console.error('Failed to check config after storage selection:', error);
+    }
   };
 
   if (isLoading) {

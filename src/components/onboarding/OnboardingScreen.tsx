@@ -1,12 +1,32 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { selectStorageFolder } from '../../utils/tauri-api';
 
 interface OnboardingScreenProps {
   onSelectStorage: () => void;
 }
 
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onSelectStorage }) => {
+  const [isSelecting, setIsSelecting] = useState(false);
+
+  const handleSelectClick = async () => {
+    setIsSelecting(true);
+    try {
+      const result = await selectStorageFolder();
+      if (result) {
+        // 성공 시 부모 컴포넌트에 알림
+        onSelectStorage();
+      }
+      // 취소된 경우 (result === null) 아무 동작 없음
+    } catch (error) {
+      console.error('Failed to select storage folder:', error);
+      // 에러 발생 시에도 온보딩 화면 유지
+    } finally {
+      setIsSelecting(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-50 dark:bg-neutral-900 p-8 text-neutral-800 dark:text-neutral-200 transition-colors duration-500">
       <div className="max-w-md w-full space-y-12 text-center">
@@ -32,10 +52,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onSelectStor
           </div>
 
           <button
-            onClick={onSelectStorage}
-            className="w-full py-4 px-6 bg-neutral-900 text-white rounded-xl font-medium hover:bg-neutral-800 transition-colors active:scale-[0.98] duration-200"
+            onClick={handleSelectClick}
+            disabled={isSelecting}
+            className="w-full py-4 px-6 bg-neutral-900 text-white rounded-xl font-medium hover:bg-neutral-800 transition-colors active:scale-[0.98] duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            저장소 선택하기
+            {isSelecting ? '선택 중...' : '저장소 선택하기'}
           </button>
         </div>
 
