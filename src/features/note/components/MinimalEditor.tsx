@@ -32,7 +32,7 @@ export default function MinimalEditor({
     ],
     content,
     autofocus: 'end',
-    immediatelyRender: false, // SSR hydration mismatch 방지
+    immediatelyRender: false,
     onUpdate: ({ editor: editorInstance }) => {
       const html = editorInstance.getHTML();
       onUpdate(html);
@@ -44,12 +44,10 @@ export default function MinimalEditor({
     },
   });
 
-  // 클라이언트에서만 마운트 확인
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // content prop 변경 시 에디터 동기화
   useEffect(() => {
     if (!editor) {
       return;
@@ -61,7 +59,6 @@ export default function MinimalEditor({
     }
   }, [content, editor]);
 
-  // SSR 방지: 클라이언트에서만 렌더링
   if (!isMounted || !editor) {
     return (
       <div className="w-full h-screen flex items-center justify-center">
@@ -76,3 +73,4 @@ export default function MinimalEditor({
     </div>
   );
 }
+

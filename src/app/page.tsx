@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { OnboardingScreen } from '../components/onboarding/OnboardingScreen';
-import { MemoView } from '../components/memo/MemoView';
-import { getConfig } from '../utils/tauri-api';
+import { OnboardingScreen } from '../features/onboarding/components/OnboardingScreen';
+import { MemoView } from '../features/note/components/MemoView';
+import { getConfig } from '../features/config/api/configApi';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);

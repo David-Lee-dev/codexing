@@ -8,3 +8,4 @@ export interface Note {
   tags?: string[];
   ai_tags?: string[];
 }
+

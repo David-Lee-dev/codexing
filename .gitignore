@@ -25,6 +25,8 @@ dist-ssr
 .env
 .env.*
 
+.next
+
 # Custom Speckit
 .specify/
 .cursor/

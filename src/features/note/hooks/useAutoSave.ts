@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { saveNote } from '../../utils/tauri-api';
+import { saveNote } from '../api/noteApi';
 
 interface UseAutoSaveOptions {
   content: string;
   debounceMs?: number;
+  enabled?: boolean;
   onSaveStart?: () => void;
   onSaveComplete?: () => void;
   onSaveError?: (error: Error) => void;
@@ -11,7 +12,8 @@ interface UseAutoSaveOptions {
 
 export function useAutoSave({
   content,
-  debounceMs = 30000, // 30초
+  debounceMs = 30000,
+  enabled = true,
   onSaveStart,
   onSaveComplete,
   onSaveError,
@@ -21,19 +23,15 @@ export function useAutoSave({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const noteIdRef = useRef<string | undefined>(undefined);
 
-  // Debounced auto-save
   useEffect(() => {
-    // 빈 내용은 저장하지 않음
-    if (!content || content.trim() === '' || content === '<p></p>') {
+    if (!enabled || !content || content.trim() === '' || content === '<p></p>') {
       return;
     }
 
-    // 기존 타이머 취소
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // 새 타이머 설정
     timeoutRef.current = setTimeout(async () => {
       setIsSaving(true);
       onSaveStart?.();
@@ -51,27 +49,23 @@ export function useAutoSave({
       }
     }, debounceMs);
 
-    // Cleanup
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [content, debounceMs, onSaveStart, onSaveComplete, onSaveError]);
+  }, [content, debounceMs, enabled, onSaveStart, onSaveComplete, onSaveError]);
 
-  // 창 닫기 시 즉시 저장
   useEffect(() => {
     const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
       if (!content || content.trim() === '' || content === '<p></p>') {
         return;
       }
 
-      // 비동기 저장을 동기적으로 처리하기 위해 이벤트 지연
       e.preventDefault();
       e.returnValue = '';
 
       try {
-        // 즉시 저장 (타이머 대기 없이)
         await saveNote(content, noteIdRef.current);
       } catch (error) {
         console.error('Save on close failed:', error);
@@ -90,3 +84,4 @@ export function useAutoSave({
     lastSaved,
   };
 }
+

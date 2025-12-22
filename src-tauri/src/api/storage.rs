@@ -1,4 +1,4 @@
-use crate::storage;
+use crate::domain::storage;
 use tracing::info;
 
 #[tauri::command]

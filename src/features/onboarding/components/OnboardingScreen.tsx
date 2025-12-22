@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { selectStorageFolder } from '../../utils/tauri-api';
+import { selectStorageFolder } from '../api/storageApi';
 
 interface OnboardingScreenProps {
   onSelectStorage: () => void;
@@ -15,13 +15,10 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onSelectStor
     try {
       const result = await selectStorageFolder();
       if (result) {
-        // 성공 시 부모 컴포넌트에 알림
         onSelectStorage();
       }
-      // 취소된 경우 (result === null) 아무 동작 없음
     } catch (error) {
       console.error('Failed to select storage folder:', error);
-      // 에러 발생 시에도 온보딩 화면 유지
     } finally {
       setIsSelecting(false);
     }
@@ -67,3 +64,4 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onSelectStor
     </div>
   );
 };
+

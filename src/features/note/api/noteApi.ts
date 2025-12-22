@@ -1,62 +1,13 @@
-import { invoke } from '@tauri-apps/api/core';
-import { open } from '@tauri-apps/plugin-dialog';
-import { Note } from '../types/note';
-
-export interface AppConfig {
-  storage_path: string | null;
-  is_onboarding_complete: boolean;
-}
+import { Note } from '../types';
 
 const STORAGE_KEY = 'memo_app_notes';
 
 /**
- * Fetches the app configuration from the backend.
- */
-export async function getConfig(): Promise<AppConfig> {
-  try {
-    return await invoke<AppConfig>('get_config');
-  } catch (error) {
-    console.error('Failed to fetch config:', error);
-    // Return default config on error
-    return {
-      storage_path: null,
-      is_onboarding_complete: false,
-    };
-  }
-}
-
-/**
- * Opens a folder picker dialog and saves the selected path as the storage folder.
- * Automatically creates a 'codex' subdirectory within the selected folder.
- */
-export async function selectStorageFolder(): Promise<string | null> {
-  try {
-    const selected = await open({
-      directory: true,
-      multiple: false,
-      title: '메모 저장 폴더 선택',
-    });
-
-    if (selected && typeof selected === 'string') {
-      // 백엔드 커맨드 호출하여 codex 디렉토리 생성 및 설정 저장
-      return await invoke<string>('select_storage_folder', {
-        selectedPath: selected,
-      });
-    }
-    return null;
-  } catch (error) {
-    console.error('Failed to select storage folder:', error);
-    throw error;
-  }
-}
-
-/**
  * Saves a note to the local file system.
- * If id is null, creates a new note.
+ * If id is provided, updates existing note.
  * Currently using localStorage mock until Tauri commands are implemented.
  */
 export async function saveNote(content: string, id?: string): Promise<Note> {
-  // Mock implementation using localStorage
   return new Promise((resolve) => {
     setTimeout(() => {
       const notes = loadNotesFromStorage();
@@ -102,7 +53,7 @@ export async function saveNote(content: string, id?: string): Promise<Note> {
       saveNotesToStorage(notes);
       console.log('[Mock] Saved note:', savedNote.id);
       resolve(savedNote);
-    }, 100); // Simulate minimal delay
+    }, 100);
   });
 }
 
@@ -111,7 +62,6 @@ export async function saveNote(content: string, id?: string): Promise<Note> {
  * Currently using localStorage mock until Tauri commands are implemented.
  */
 export async function loadNotes(): Promise<Note[]> {
-  // Mock implementation using localStorage
   return Promise.resolve(loadNotesFromStorage());
 }
 
@@ -154,8 +104,8 @@ function saveNotesToStorage(notes: Note[]): void {
  * Helper: Extract title from HTML content
  */
 function extractTitle(html: string): string {
-  // Remove HTML tags and get first line
   const text = html.replace(/<[^>]*>/g, '').trim();
   const firstLine = text.split('\n')[0] || text.split(' ')[0] || '';
-  return firstLine.slice(0, 50) || 'Untitled'; // Limit title length
+  return firstLine.slice(0, 50) || 'Untitled';
 }
+

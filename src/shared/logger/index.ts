@@ -21,7 +21,6 @@ class Logger {
   private isDev: boolean;
 
   constructor() {
-    // Check if we are in development mode
     this.isDev = process.env.NODE_ENV === 'development';
   }
 
@@ -53,7 +52,6 @@ class Logger {
         args.push(JSON.stringify(context, null, 2));
       }
 
-      // Map to appropriate console method
       switch (level) {
         case 'debug':
           console.debug(...args);
@@ -69,8 +67,6 @@ class Logger {
           break;
       }
     }
-
-    // TODO: Forward to Tauri backend in production or when configured
   }
 
   private getConsoleStyle(level: LogLevel): string {

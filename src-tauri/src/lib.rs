@@ -1,11 +1,11 @@
-mod commands;
-mod config;
-mod storage;
+mod api;
+mod domain;
+mod infrastructure;
 
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 // AppConfig를 외부에서 사용할 수 있도록 re-export
-pub use config::AppConfig;
+pub use domain::config::AppConfig;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -21,12 +21,12 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             // Misc commands
-            commands::misc::greet,
+            api::misc::greet,
             // Config commands
-            commands::config::get_config,
+            api::config::get_config,
             // Storage commands
-            commands::storage::select_storage_folder,
-            commands::storage::set_storage_path,
+            api::storage::select_storage_folder,
+            api::storage::set_storage_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
