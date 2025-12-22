@@ -38,7 +38,6 @@ export const MemoView = () => {
   return (
     <main className="w-full h-screen bg-white dark:bg-gray-900 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       <MinimalEditor content={content} onUpdate={setContent} placeholder="메모를 입력하세요..." />
-      
       {isSaving && (
         <div className="fixed bottom-4 right-4 text-sm text-gray-500 animate-pulse">저장 중...</div>
       )}
@@ -50,4 +49,3 @@ export const MemoView = () => {
     </main>
   );
 };
-

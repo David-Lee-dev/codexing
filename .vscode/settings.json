@@ -39,6 +39,8 @@
   },
 
   // CSS 린터: Tailwind 지시어 허용
-  "css.lint.unknownAtRules": "ignore"
+  "css.lint.unknownAtRules": "ignore",
+  "debug.javascript.autoAttachFilter": "disabled"
+
 }
 

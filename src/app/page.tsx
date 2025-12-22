@@ -10,34 +10,39 @@ export default function Home() {
   const [isOnboarding, setIsOnboarding] = useState(false);
 
   useEffect(() => {
-    const checkConfig = async () => {
+    const initializeApp = async () => {
       try {
         const config = await getConfig();
+
+        // storage_path가 없으면 온보딩 화면으로
         if (!config.storage_path) {
           setIsOnboarding(true);
+        } else {
         }
       } catch (error) {
-        console.error('Failed to check config:', error);
+        console.error('[Home] Config 로드 실패:', error);
+        // 에러 시 온보딩 화면으로
+        setIsOnboarding(true);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkConfig();
+    initializeApp();
   }, []);
 
   const handleStorageSelect = async () => {
-    // 저장소 선택 완료 후 설정 다시 확인
     try {
       const config = await getConfig();
       if (config.storage_path) {
         setIsOnboarding(false);
       }
     } catch (error) {
-      console.error('Failed to check config after storage selection:', error);
+      console.error('[Home] 저장소 선택 후 Config 확인 실패:', error);
     }
   };
 
+  // 로딩 화면
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white dark:bg-gray-900">
@@ -46,6 +51,7 @@ export default function Home() {
     );
   }
 
+  // 온보딩 화면
   if (isOnboarding) {
     return (
       <div className="animate-in fade-in duration-700">
@@ -54,6 +60,6 @@ export default function Home() {
     );
   }
 
-  // 저장소 설정이 완료된 경우 MemoView 렌더링
+  // 메모 화면
   return <MemoView />;
 }

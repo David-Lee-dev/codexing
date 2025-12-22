@@ -27,7 +27,7 @@
     @apply outline-none min-h-screen py-8 px-8 text-lg leading-relaxed max-w-3xl mx-auto;
   }
 
-  .ProseMirror p.is-editor-empty:first-child::before {
+  .ProseMirror p.is-editor-empty:first-child:before {
     @apply text-gray-400;
     content: attr(data-placeholder);
     float: left;

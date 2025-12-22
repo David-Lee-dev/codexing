@@ -15,10 +15,10 @@ pub fn validate_path(path: &PathBuf) -> Result<(), String> {
 
 /// Create codex subdirectory in selected path
 pub fn create_codex_directory(selected_path: &str) -> Result<String, String> {
-    let base_path = PathBuf::from(selected_path);
+    let base_path: PathBuf = PathBuf::from(selected_path);
     validate_path(&base_path)?;
 
-    let codex_path = base_path.join("codex");
+    let codex_path: PathBuf = base_path.join("codex");
 
     if !codex_path.exists() {
         fs::create_dir_all(&codex_path)
@@ -33,4 +33,3 @@ pub fn create_codex_directory(selected_path: &str) -> Result<String, String> {
         .ok_or_else(|| "Failed to convert path to string".to_string())
         .map(|s| s.to_string())
 }
-

@@ -2,35 +2,62 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Tauri + Next.js",
+      "name": "Launch Tauri",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "/Users/david/.nvm/versions/node/v24.12.0/bin/pnpm",
       "runtimeArgs": ["tauri:dev"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "skipFiles": ["<node_internals>/**"],
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ],
       "sourceMaps": true,
       "resolveSourceMapLocations": [
         "${workspaceFolder}/**",
         "!**/node_modules/**"
       ],
       "env": {
-        "NODE_OPTIONS": "--inspect"
+        "NODE_OPTIONS": "--inspect=0.0.0.0:9229"
       }
     },
     {
-      "name": "Attach to Next.js (Port 9229)",
+      "name": "Attach to Next.js",
       "type": "node",
       "request": "attach",
       "port": 9229,
-      "restart": true,
-      "skipFiles": ["<node_internals>/**"],
+      "address": "localhost",
+      "restart": false,
+      "timeout": 30000,
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ],
       "sourceMaps": true,
       "resolveSourceMapLocations": [
         "${workspaceFolder}/**",
         "!**/node_modules/**"
       ]
+    },
+    {
+      "name": "Attach to Rust",
+      "type": "lldb",
+      "request": "attach",
+      "program": "${workspaceFolder}/src-tauri/target/debug/codexing",
+      "waitFor": true,
+      "stopOnEntry": false,
+      "sourceMap": {},
+      "initCommands": [
+        "settings set target.process.thread.step-avoid-regexp ^(.*::.*|.*<.*>.*)$"
+      ]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Tauri",
+      "configurations": ["Launch Tauri", "Attach to Next.js", "Attach to Rust"],
+      "stopAll": true
     }
   ]
 }

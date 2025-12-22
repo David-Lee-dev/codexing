@@ -64,4 +64,3 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onSelectStor
     </div>
   );
 };
-
