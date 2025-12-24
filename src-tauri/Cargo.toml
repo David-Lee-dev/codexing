@@ -27,4 +27,4 @@ rusqlite = { version = "0.38", features = ["bundled", "load_extension"] }
 sqlite-vec = "0.1.6"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
-
+dotenv = "0.15.0"

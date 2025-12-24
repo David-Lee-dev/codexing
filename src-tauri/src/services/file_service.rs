@@ -38,13 +38,9 @@ pub fn save_config(app_handle: &tauri::AppHandle, config: &AppConfig) -> Result<
     Ok(())
 }
 
-pub fn create_directory(
-    app_handle: &tauri::AppHandle,
-    directory_name: &str,
-) -> Result<String, String> {
-    let config = load_config(app_handle);
-    let base_path: PathBuf = PathBuf::from(config.storage_path.unwrap());
-    let directory_path: PathBuf = base_path.join(directory_name);
+pub fn create_directory(path: &str, name: &str) -> Result<String, String> {
+    let base_path: PathBuf = PathBuf::from(path);
+    let directory_path: PathBuf = base_path.join(name);
 
     if !base_path.exists() {
         return Err(format!("Path does not exist: {:?}", base_path));
@@ -71,7 +67,7 @@ pub fn create_directory(
 }
 
 fn _get_config_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
-    let app_data = app_handle
+    let app_data: PathBuf = app_handle
         .path()
         .app_data_dir()
         .map_err(|e| format!("Failed to get app data directory: {}", e))?;

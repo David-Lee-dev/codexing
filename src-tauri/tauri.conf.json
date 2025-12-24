@@ -30,6 +30,13 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "resources": [
+      "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-linux-aarch64.so",
+      "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-linux-x86_64.so",
+      "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-macos-aarch64.dylib",
+      "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-macos-x86_64.dylib",
+      "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-windows-x86_64.dll"
     ]
   }
 }

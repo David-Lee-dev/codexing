@@ -18,8 +18,6 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
-            // Misc commands
-            // api::misc::greet,
             // Config commands
             commands::config::get_config,
             commands::config::save_config,
@@ -28,7 +26,6 @@ pub fn run() {
             // // Database commands
             commands::database::init_database,
             commands::database::get_database_health,
-            // api::db::run_migrations,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
