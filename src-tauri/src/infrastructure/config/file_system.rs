@@ -3,7 +3,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use tauri::Manager;
 
-/// Get configuration file path
 pub fn get_config_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
     let app_data = app_handle
         .path()
@@ -14,7 +13,6 @@ pub fn get_config_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, String>
     Ok(app_data.join("config.json"))
 }
 
-/// Read configuration file
 pub fn read_config_file(config_path: &Path) -> Result<AppConfig, String> {
     let content = fs::read_to_string(config_path)
         .map_err(|e| format!("Failed to read config file: {}", e))?;
@@ -22,11 +20,9 @@ pub fn read_config_file(config_path: &Path) -> Result<AppConfig, String> {
         .map_err(|e| format!("Failed to parse config file: {}", e))
 }
 
-/// Write configuration file
 pub fn write_config_file(config_path: &Path, config: &AppConfig) -> Result<(), String> {
     let json = serde_json::to_string_pretty(config)
         .map_err(|e| format!("Failed to serialize config: {}", e))?;
     fs::write(config_path, json).map_err(|e| format!("Failed to write config file: {}", e))?;
     Ok(())
 }
-

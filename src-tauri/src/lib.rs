@@ -27,6 +27,10 @@ pub fn run() {
             // Storage commands
             api::storage::select_storage_folder,
             api::storage::set_storage_path,
+            // Database commands
+            api::db::init_database,
+            api::db::run_migrations,
+            api::db::health_check,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -24,4 +24,3 @@ export async function selectStorageFolder(): Promise<string | null> {
     throw error;
   }
 }
-
