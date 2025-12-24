@@ -1,5 +1,3 @@
 pub mod config;
-pub mod db;
-pub mod misc;
+pub mod database;
 pub mod storage;
-

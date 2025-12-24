@@ -1,16 +1,8 @@
+use crate::models::db_health::DatabaseHealth;
 use rusqlite::Connection;
-use serde::{Deserialize, Serialize};
 use tracing::{error, info};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct HealthStatus {
-    pub connected: bool,
-    pub sqlite_vec_loaded: bool,
-    pub wal_mode: bool,
-    pub foreign_keys_enabled: bool,
-}
-
-pub fn health_check(conn: &Connection) -> rusqlite::Result<HealthStatus> {
+pub fn health_check(conn: &Connection) -> rusqlite::Result<DatabaseHealth> {
     conn.execute("SELECT 1", [])?;
     let connected = true;
 
@@ -28,35 +20,35 @@ pub fn health_check(conn: &Connection) -> rusqlite::Result<HealthStatus> {
         .map(|val| val == 1)
         .unwrap_or(false);
 
-    let sqlite_vec_loaded = check_sqlite_vec_loaded(conn);
+    let sqlite_vec_loaded = _check_sqlite_vec_loaded(conn);
 
-    let status = HealthStatus {
+    let health = DatabaseHealth {
         connected,
         sqlite_vec_loaded,
         wal_mode,
         foreign_keys_enabled,
     };
 
-    if status.connected
-        && status.sqlite_vec_loaded
-        && status.wal_mode
-        && status.foreign_keys_enabled
+    if health.connected
+        && health.sqlite_vec_loaded
+        && health.wal_mode
+        && health.foreign_keys_enabled
     {
-        info!("Health check passed: all systems operational");
+        info!("Database health check passed: all systems operational");
     } else {
         error!(
-            "Health check warnings: connected={}, sqlite_vec={}, wal={}, fk={}",
-            status.connected,
-            status.sqlite_vec_loaded,
-            status.wal_mode,
-            status.foreign_keys_enabled
+            "Database health check failed: connected={}, sqlite_vec={}, wal={}, fk={}",
+            health.connected,
+            health.sqlite_vec_loaded,
+            health.wal_mode,
+            health.foreign_keys_enabled
         );
     }
 
-    Ok(status)
+    Ok(health)
 }
 
-fn check_sqlite_vec_loaded(conn: &Connection) -> bool {
+fn _check_sqlite_vec_loaded(conn: &Connection) -> bool {
     match conn.query_row(
         "SELECT name FROM sqlite_master WHERE type='table' AND name='vec_blocks'",
         [],

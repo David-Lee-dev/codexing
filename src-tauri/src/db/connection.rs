@@ -1,4 +1,4 @@
-use crate::domain::config;
+use crate::services::file_service;
 use rusqlite::{Connection, Result};
 use std::path::{Path, PathBuf};
 use tracing::{error, info};
@@ -47,7 +47,7 @@ pub fn load_sqlite_vec_extension(conn: &Connection, app_handle: &tauri::AppHandl
 }
 
 fn get_sqlite_vec_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, rusqlite::Error> {
-    let app_config = config::load_config(app_handle);
+    let app_config = file_service::load_config(app_handle);
 
     let storage_path = app_config.storage_path.ok_or_else(|| {
         rusqlite::Error::SqliteFailure(
