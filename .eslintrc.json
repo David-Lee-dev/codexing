@@ -1,43 +1,68 @@
 {
+  "root": true,
   "extends": [
-    "next/core-web-vitals",
+    "next/core-web-vitals", // react, react-hooks, next 규칙을 모두 포함함
     "next/typescript",
     "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:prettier/recommended"
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "prettier" // Prettier와 충돌하는 ESLint 규칙을 끄는 역할 (최하단 필수)
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",
     "sourceType": "module",
-    "ecmaFeatures": {
-      "jsx": true
-    },
     "project": "./tsconfig.json"
   },
-  "plugins": ["@typescript-eslint", "react", "react-hooks", "prettier"],
+  "plugins": ["@typescript-eslint", "import", "prettier"],
   "rules": {
-    "@typescript-eslint/explicit-module-boundary-types": "off",
+    // 필수 규칙 설정
+    "prettier/prettier": "error",
     "@typescript-eslint/no-unused-vars": [
       "warn",
-      {
-        "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_"
-      }
+      { "argsIgnorePattern": "^_" }
     ],
     "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "react/react-in-jsx-scope": "off",
-    "react/prop-types": "off",
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
-    "prettier/prettier": "error"
+
+    // Import 순서 정렬 (대중적 표준)
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          ["parent", "sibling"],
+          "index",
+          "object",
+          "type"
+        ],
+        "pathGroups": [
+          {
+            "pattern": "{react,react-dom/**}",
+            "group": "external",
+            "position": "before"
+          },
+          {
+            "pattern": "next/**",
+            "group": "external",
+            "position": "before"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["react", "next"],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ]
   },
   "settings": {
-    "react": {
-      "version": "detect"
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true
+      }
     }
   }
 }

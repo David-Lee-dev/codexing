@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+
 import { saveNote } from '../api/noteApi';
 
 interface UseAutoSaveOptions {
@@ -24,7 +25,12 @@ export function useAutoSave({
   const noteIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    if (!enabled || !content || content.trim() === '' || content === '<p></p>') {
+    if (
+      !enabled ||
+      !content ||
+      content.trim() === '' ||
+      content === '<p></p>'
+    ) {
       return;
     }
 
@@ -43,7 +49,9 @@ export function useAutoSave({
         onSaveComplete?.();
       } catch (error) {
         console.error('Auto-save failed:', error);
-        onSaveError?.(error instanceof Error ? error : new Error('Unknown error'));
+        onSaveError?.(
+          error instanceof Error ? error : new Error('Unknown error'),
+        );
       } finally {
         setIsSaving(false);
       }
@@ -84,4 +92,3 @@ export function useAutoSave({
     lastSaved,
   };
 }
-

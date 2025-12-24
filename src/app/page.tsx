@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { OnboardingScreen } from '../features/onboarding/components/OnboardingScreen';
-import { MemoView } from '../features/note/components/MemoView';
-import { getConfig } from '../features/config/api/configApi';
+import { useEffect, useState } from 'react';
+
+import { getConfig } from '@/features/config/api/configApi';
+import { AppConfig } from '@/features/config/types';
+import { initDatabase } from '@/features/database/api/databaseApi';
+import { MemoView } from '@/features/note/components/MemoView';
+import { OnboardingScreen } from '@/features/onboarding/components/OnboardingScreen';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,16 +15,15 @@ export default function Home() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        const config = await getConfig();
+        const config: AppConfig = await getConfig();
 
-        // storage_path가 없으면 온보딩 화면으로
-        if (!config.storage_path) {
-          setIsOnboarding(true);
+        if (config.storage_path) {
+          await initDatabase();
         } else {
+          setIsOnboarding(true);
         }
       } catch (error) {
         console.error('[Home] Config 로드 실패:', error);
-        // 에러 시 온보딩 화면으로
         setIsOnboarding(true);
       } finally {
         setIsLoading(false);
@@ -34,6 +36,7 @@ export default function Home() {
   const handleStorageSelect = async () => {
     try {
       const config = await getConfig();
+      console.log('config', config);
       if (config.storage_path) {
         setIsOnboarding(false);
       }
@@ -42,7 +45,6 @@ export default function Home() {
     }
   };
 
-  // 로딩 화면
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white dark:bg-gray-900">
@@ -51,7 +53,6 @@ export default function Home() {
     );
   }
 
-  // 온보딩 화면
   if (isOnboarding) {
     return (
       <div className="animate-in fade-in duration-700">
@@ -60,6 +61,5 @@ export default function Home() {
     );
   }
 
-  // 메모 화면
   return <MemoView />;
 }

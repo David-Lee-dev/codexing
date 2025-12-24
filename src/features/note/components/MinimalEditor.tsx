@@ -1,9 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
+import Placeholder from '@tiptap/extension-placeholder';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
-import { useEffect, useState } from 'react';
 
 interface MinimalEditorProps {
   content: string;
@@ -73,4 +74,3 @@ export default function MinimalEditor({
     </div>
   );
 }
-

@@ -1,22 +1,24 @@
 'use client';
 
 import React, { useState } from 'react';
-import { selectStorageFolder } from '../api/storageApi';
+
+import { selectStorageFolder } from '@/features/onboarding/api/storageApi';
 
 interface OnboardingScreenProps {
   onSelectStorage: () => void;
 }
 
-export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onSelectStorage }) => {
-  const [isSelecting, setIsSelecting] = useState(false);
+export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
+  onSelectStorage,
+}) => {
+  const [isSelecting, setIsSelecting] = useState<boolean>(false);
 
-  const handleSelectClick = async () => {
+  const handleSelectClick = async (): Promise<void> => {
     setIsSelecting(true);
+
     try {
-      const result = await selectStorageFolder();
-      if (result) {
-        onSelectStorage();
-      }
+      await selectStorageFolder();
+      onSelectStorage();
     } catch (error) {
       console.error('Failed to select storage folder:', error);
     } finally {

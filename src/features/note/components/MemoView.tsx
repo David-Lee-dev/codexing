@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import MinimalEditor from './MinimalEditor';
-import { useAutoSave } from '../hooks/useAutoSave';
 import { loadNotes } from '../api/noteApi';
+import { useAutoSave } from '../hooks/useAutoSave';
 
 export const MemoView = () => {
   const [content, setContent] = useState<string>('');
@@ -15,7 +16,9 @@ export const MemoView = () => {
         const notes = await loadNotes();
         if (notes.length > 0) {
           const latestNote = notes.sort(
-            (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+            (a, b) =>
+              new Date(b.updated_at).getTime() -
+              new Date(a.updated_at).getTime(),
           )[0];
           setContent(latestNote.content);
         }
@@ -37,9 +40,15 @@ export const MemoView = () => {
 
   return (
     <main className="w-full h-screen bg-white dark:bg-gray-900 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-      <MinimalEditor content={content} onUpdate={setContent} placeholder="메모를 입력하세요..." />
+      <MinimalEditor
+        content={content}
+        onUpdate={setContent}
+        placeholder="메모를 입력하세요..."
+      />
       {isSaving && (
-        <div className="fixed bottom-4 right-4 text-sm text-gray-500 animate-pulse">저장 중...</div>
+        <div className="fixed bottom-4 right-4 text-sm text-gray-500 animate-pulse">
+          저장 중...
+        </div>
       )}
       {lastSaved && !isSaving && (
         <div className="fixed bottom-4 right-4 text-xs text-gray-400">
