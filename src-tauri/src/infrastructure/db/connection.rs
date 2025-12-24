@@ -1,6 +1,7 @@
+use crate::domain::config;
 use rusqlite::{Connection, Result};
 use std::path::{Path, PathBuf};
-use tracing::{error, info, warn};
+use tracing::{error, info};
 
 pub fn create_connection<P: AsRef<Path>>(db_path: P) -> Result<Connection> {
     let conn = Connection::open(db_path)?;
@@ -12,64 +13,63 @@ pub fn create_connection<P: AsRef<Path>>(db_path: P) -> Result<Connection> {
     Ok(conn)
 }
 
-pub fn load_sqlite_vec_extension(conn: &Connection) -> Result<()> {
-    let extension_paths = get_sqlite_vec_paths();
+pub fn load_sqlite_vec_extension(conn: &Connection, app_handle: &tauri::AppHandle) -> Result<()> {
+    let extension_path = get_sqlite_vec_path(app_handle)?;
 
-    for path in extension_paths {
-        if path.exists() {
-            info!("Loading sqlite-vec extension from: {:?}", path);
-            unsafe {
-                match conn.load_extension(&path, None::<&str>) {
-                    Ok(_) => {
-                        info!("sqlite-vec extension loaded successfully");
-                        return Ok(());
-                    }
-                    Err(e) => {
-                        warn!("Failed to load sqlite-vec from {:?}: {}", path, e);
-                        continue;
-                    }
-                }
-            }
-        }
+    if !extension_path.exists() {
+        error!("sqlite-vec extension not found at: {:?}", extension_path);
+        return Err(rusqlite::Error::SqliteFailure(
+            rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_ERROR),
+            Some(format!(
+                "sqlite-vec extension not found at: {:?}. Please ensure the extension file is placed in the storage directory.",
+                extension_path
+            )),
+        ));
     }
 
-    error!("sqlite-vec extension not found in any expected location");
-    Err(rusqlite::Error::SqliteFailure(
-        rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_ERROR),
-        Some(format!(
-            "sqlite-vec extension not found. Checked paths: {:?}",
-            get_sqlite_vec_paths()
-        )),
-    ))
+    info!("Loading sqlite-vec extension from: {:?}", extension_path);
+    unsafe {
+        conn.load_extension(&extension_path, None::<&str>)
+            .map_err(|e| {
+                error!(
+                    "Failed to load sqlite-vec extension from {:?}: {}",
+                    extension_path, e
+                );
+                rusqlite::Error::SqliteFailure(
+                    rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_ERROR),
+                    Some(format!("Failed to load sqlite-vec extension: {}", e)),
+                )
+            })?;
+    }
+
+    info!("sqlite-vec extension loaded successfully");
+    Ok(())
 }
 
-fn get_sqlite_vec_paths() -> Vec<PathBuf> {
-    let mut paths = Vec::new();
+fn get_sqlite_vec_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, rusqlite::Error> {
+    let app_config = config::load_config(app_handle);
 
-    if let Ok(resource_dir) = std::env::var("TAURI_RESOURCE_DIR") {
-        let resource_path = PathBuf::from(resource_dir).join("sqlite-vec");
-        #[cfg(target_os = "macos")]
-        paths.push(resource_path.join("libsqlite_vec.dylib"));
-        #[cfg(target_os = "linux")]
-        paths.push(resource_path.join("libsqlite_vec.so"));
-        #[cfg(target_os = "windows")]
-        paths.push(resource_path.join("sqlite_vec.dll"));
-    }
+    let storage_path = app_config.storage_path.ok_or_else(|| {
+        rusqlite::Error::SqliteFailure(
+            rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_ERROR),
+            Some("Storage path not configured. Please complete onboarding first.".to_string()),
+        )
+    })?;
 
-    if let Ok(custom_path) = std::env::var("SQLITE_VEC_PATH") {
-        paths.push(PathBuf::from(custom_path));
-    }
+    let storage_dir = PathBuf::from(storage_path);
 
-    if let Ok(exe_dir) = std::env::current_exe() {
-        if let Some(parent) = exe_dir.parent() {
-            #[cfg(target_os = "macos")]
-            paths.push(parent.join("libsqlite_vec.dylib"));
-            #[cfg(target_os = "linux")]
-            paths.push(parent.join("libsqlite_vec.so"));
-            #[cfg(target_os = "windows")]
-            paths.push(parent.join("sqlite_vec.dll"));
-        }
-    }
+    #[cfg(target_os = "macos")]
+    return Ok(storage_dir.join("libsqlite_vec.dylib"));
 
-    paths
+    #[cfg(target_os = "linux")]
+    return Ok(storage_dir.join("libsqlite_vec.so"));
+
+    #[cfg(target_os = "windows")]
+    return Ok(storage_dir.join("sqlite_vec.dll"));
+
+    #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
+    Err(rusqlite::Error::SqliteFailure(
+        rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_ERROR),
+        Some("Unsupported platform for sqlite-vec extension".to_string()),
+    ))
 }

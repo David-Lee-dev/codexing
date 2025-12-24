@@ -4,9 +4,9 @@ use std::path::PathBuf;
 use tracing::{error, info};
 
 fn get_db_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
-    let config = config::load_config(app_handle);
+    let app_config = config::load_config(app_handle);
 
-    match config.storage_path {
+    match app_config.storage_path {
         Some(storage_path) => {
             let db_path = PathBuf::from(storage_path).join("cognitive.db");
             info!("Database path determined: {:?}", db_path);
@@ -28,7 +28,7 @@ pub fn init_database(app_handle: tauri::AppHandle) -> Result<(), String> {
     let mut conn = connection::create_connection(&db_path)
         .map_err(|e| format!("Failed to create database connection: {}", e))?;
 
-    connection::load_sqlite_vec_extension(&conn)
+    connection::load_sqlite_vec_extension(&conn, &app_handle)
         .map_err(|e| format!("Failed to load sqlite-vec extension: {}", e))?;
 
     schema::init_schema(&mut conn).map_err(|e| format!("Failed to initialize schema: {}", e))?;

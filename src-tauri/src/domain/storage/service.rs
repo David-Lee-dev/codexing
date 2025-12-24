@@ -20,7 +20,6 @@ pub fn set_storage_path(app_handle: &tauri::AppHandle, path: String) -> Result<(
     Ok(())
 }
 
-/// Select and set storage folder
 pub fn select_and_set_storage_folder(
     app_handle: &tauri::AppHandle,
     selected_path: String,
@@ -36,4 +35,3 @@ pub fn select_and_set_storage_folder(
 
     Ok(codex_path_str)
 }
-

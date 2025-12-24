@@ -3,14 +3,19 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use tauri::Manager;
 
-pub fn get_config_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
+/// 앱 데이터 디렉토리를 가져오고 생성합니다.
+pub fn get_app_data_dir(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
     let app_data = app_handle
         .path()
         .app_data_dir()
         .map_err(|e| format!("Failed to get app data directory: {}", e))?;
     fs::create_dir_all(&app_data)
         .map_err(|e| format!("Failed to create app data directory: {}", e))?;
-    Ok(app_data.join("config.json"))
+    Ok(app_data)
+}
+
+pub fn get_config_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
+    Ok(get_app_data_dir(app_handle)?.join("config.json"))
 }
 
 pub fn read_config_file(config_path: &Path) -> Result<AppConfig, String> {
