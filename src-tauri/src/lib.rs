@@ -1,7 +1,6 @@
-mod commands;
-mod db;
-mod models;
-mod services;
+mod domains;
+mod infrastructure;
+mod utils;
 
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -18,14 +17,11 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
-            // Config commands
-            commands::config::get_config,
-            commands::config::save_config,
-            // Storage commands
-            commands::storage::select_storage_folder,
-            // // Database commands
-            commands::database::init_database,
-            commands::database::get_database_health,
+            // Config
+            domains::config::command::load_config,
+            domains::config::command::save_config,
+            // Note
+            domains::note::command::select_storage,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

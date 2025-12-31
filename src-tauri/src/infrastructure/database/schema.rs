@@ -1,5 +1,4 @@
 use rusqlite::Connection;
-use tracing::info;
 
 pub fn init_schema(conn: &mut Connection) -> rusqlite::Result<()> {
     let tx = conn.transaction()?;
@@ -24,6 +23,7 @@ pub fn init_schema(conn: &mut Connection) -> rusqlite::Result<()> {
             content TEXT,
             order_index REAL NOT NULL,
             source_document_id TEXT,
+            indexing_status TEXT DEFAULT 'PENDING',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(document_id) REFERENCES documents(id) ON DELETE CASCADE
         )",
@@ -52,6 +52,5 @@ pub fn init_schema(conn: &mut Connection) -> rusqlite::Result<()> {
     )?;
 
     tx.commit()?;
-    info!("Database schema initialized successfully");
     Ok(())
 }

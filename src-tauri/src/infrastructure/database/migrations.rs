@@ -30,11 +30,7 @@ pub fn run_migrations(conn: &Connection) -> rusqlite::Result<()> {
     create_migrations_table(conn)?;
 
     if !is_migration_applied(conn, "v1")? {
-        info!("Applying migration v1: initial schema");
         record_migration(conn, "v1")?;
-        info!("Migration v1 applied successfully");
-    } else {
-        info!("Migration v1 already applied, skipping");
     }
 
     Ok(())
