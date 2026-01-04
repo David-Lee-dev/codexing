@@ -25,7 +25,9 @@ const Tapbar: React.FC = () => {
         ];
       } else {
         newTabs = [...config.tabs];
-        newTabs[0].focused = true;
+        if (!newTabs.find((t) => t.focused)) {
+          newTabs[newTabs.length - 1].focused = true;
+        }
       }
 
       if (newTabs) {
