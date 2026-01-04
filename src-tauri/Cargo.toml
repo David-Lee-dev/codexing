@@ -34,3 +34,4 @@ ndarray = "0.15"
 tokio = { version = "1", features = ["full"] }
 uuid = { version = "1", features = ["v4"] }
 anyhow = "1.0"
+thiserror = "2.0.0"

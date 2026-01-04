@@ -20,6 +20,8 @@ pub fn run() {
             // Config
             domains::config::command::load_config,
             domains::config::command::save_config,
+            domains::config::command::init_database,
+            domains::config::command::load_database,
             // Note
             domains::note::command::select_storage,
         ])

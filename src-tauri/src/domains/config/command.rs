@@ -1,5 +1,5 @@
 use crate::domains::common::model::CommandResponse;
-use crate::domains::config::model::AppConfig;
+use crate::domains::config::model::{AppConfig, DatabaseHealth};
 use crate::domains::config::service::{
     init_database as init_database_service, load_config as load_config_service,
     load_database as load_database_service, save_config as save_config_service,
@@ -26,6 +26,7 @@ pub fn load_config(app_handle: AppHandle) -> CommandResponse<AppConfig> {
 
 #[tauri::command]
 pub fn save_config(app_handle: AppHandle, config: AppConfig) -> CommandResponse<AppConfig> {
+    println!("Saving config: {:?}", config);
     match save_config_service(&app_handle, &config) {
         Ok(config) => CommandResponse {
             success: true,
@@ -61,7 +62,7 @@ pub fn init_database(app_handle: AppHandle) -> CommandResponse<()> {
 }
 
 #[tauri::command]
-pub fn get_database_health(app_handle: AppHandle) -> CommandResponse<DatabaseHealth> {
+pub fn load_database(app_handle: AppHandle) -> CommandResponse<DatabaseHealth> {
     match load_database_service(&app_handle) {
         Ok(health) => CommandResponse {
             success: true,

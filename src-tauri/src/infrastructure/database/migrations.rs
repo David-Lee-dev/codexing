@@ -1,5 +1,4 @@
 use rusqlite::Connection;
-use tracing::info;
 
 fn create_migrations_table(conn: &Connection) -> rusqlite::Result<()> {
     conn.execute(

@@ -1,8 +1,8 @@
 use anyhow::{Context, Result};
 use std::path::PathBuf;
-use tauri::Manager;
+use tauri::{AppHandle, Manager};
 
-pub fn get_app_data_path(app_handle: &tauri::AppHandle) -> Result<PathBuf> {
+pub fn get_app_data_path(app_handle: &AppHandle) -> Result<PathBuf> {
     let app_data = app_handle
         .path()
         .app_data_dir()

@@ -5,32 +5,29 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum ConfigError {
     #[error("Failed to get app data path")]
-    AppDataPath(#[from] AnyhowError),
+    AppDataPath(AnyhowError),
 
     #[error("Failed to parse config file")]
-    ConfigParsing(#[from] AnyhowError),
+    ConfigParsing(AnyhowError),
 
     #[error("Failed to serialize config file")]
-    ConfigSerializing(#[from] AnyhowError),
+    ConfigSerializing(AnyhowError),
 
     #[error("Failed to read config file")]
-    ConfigReading(#[from] AnyhowError),
+    ConfigReading(AnyhowError),
 
     #[error("Failed to save config file")]
-    ConfigSaving(#[from] AnyhowError),
-
-    #[error("Failed to initialize database")]
-    DatabaseInitialization(#[from] AnyhowError),
+    ConfigSaving(AnyhowError),
 
     #[error("Failed to create database connection")]
-    DatabaseConnectionCreation(#[from] AnyhowError),
+    DatabaseConnectionCreation(RusqliteError),
 
     #[error("Failed to load sqlite-vec extension")]
-    DatabaseExtensionLoading(#[from] AnyhowError),
+    DatabaseExtensionLoading(AnyhowError),
 
     #[error("Failed to initialize schema")]
-    DatabaseSchemaInitialization(#[from] AnyhowError),
+    DatabaseSchemaInitialization(RusqliteError),
 
     #[error("Failed to run migrations")]
-    DatabaseMigrationsRunning(#[from] AnyhowError),
+    DatabaseMigrationsRunning(RusqliteError),
 }

@@ -1,21 +1,17 @@
 use anyhow::{anyhow, Context, Result};
 use rusqlite::Connection;
-use std::path::PathBuf;
-use tauri::path::BaseDirectory;
+use tauri::{path::BaseDirectory, AppHandle, Manager};
 
-pub fn load_sqlite_vec_extension(conn: &Connection, app_handle: &tauri::AppHandle) -> Result<()> {
+pub fn load_sqlite_vec_extension(conn: &Connection, app_handle: &AppHandle) -> Result<()> {
     let extension_path = _get_sqlite_vec_path();
 
-    let absolute_path: PathBuf = app_handle
+    let absolute_path = app_handle
         .path()
         .resolve(&extension_path, BaseDirectory::Resource)
         .context("Failed to resolve sqlite-vec extension path")?;
 
     if !absolute_path.exists() {
-        return Err(anyhow!(
-            "sqlite-vec extension file does not exist: {:?}",
-            absolute_path
-        ));
+        return Err(anyhow!("sqlite-vec extension file does not exist"));
     }
 
     unsafe {

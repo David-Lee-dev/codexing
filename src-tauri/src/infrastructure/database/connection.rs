@@ -1,7 +1,5 @@
 use rusqlite::{Connection, Result};
-use std::path::{Path, PathBuf};
-use tauri::path::BaseDirectory;
-use tauri::Manager;
+use std::path::PathBuf;
 
 pub fn create_connection(path: &PathBuf) -> Result<Connection> {
     let db_path = path.join(

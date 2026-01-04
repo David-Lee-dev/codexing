@@ -1,0 +1,10 @@
+{
+  "bundle": {
+    "resources": [
+      "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-macos-aarch64.dylib",
+      "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-macos-x86_64.dylib",
+      "resources/embedding/bge_m3_macos_aarch64.onnx",
+      "resources/embedding/bge_m3_macos_x86_64.onnx"
+    ]
+  }
+}

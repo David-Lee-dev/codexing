@@ -31,43 +31,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [
-      "resources/embedding/tokenizer.json",
-      {
-        "platform": "linux-aarch64",
-        "resources": [
-          "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-linux-aarch64.so",
-          "resources/embedding/bge_m3_linux_aarch64.onnx"
-        ]
-      },
-      {
-        "platform": "linux-x86_64",
-        "resources": [
-          "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-linux-x86_64.so",
-          "resources/embedding/bge_m3_linux_x86_64.onnx"
-        ]
-      },
-      {
-        "platform": "macos-aarch64",
-        "resources": [
-          "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-macos-aarch64.dylib",
-          "resources/embedding/bge_m3_macos_aarch64.onnx"
-        ]
-      },
-      {
-        "platform": "macos-x86_64",
-        "resources": [
-          "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-macos-x86_64.dylib",
-          "resources/embedding/bge_m3_macos_x86_64.onnx"
-        ]
-      },
-      {
-        "platform": "windows-x86_64",
-        "resources": [
-          "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-windows-x86_64.dll",
-          "resources/embedding/bge_m3_windows_x86_64.onnx"
-        ]
-      }
-    ]
+    "resources": ["resources/embedding/tokenizer.json"]
   }
 }

@@ -3,8 +3,9 @@ use crate::utils::file_system::create_directory;
 use anyhow::anyhow;
 use std::path::PathBuf;
 
-pub fn ensure_storage(path: &str, name: &str) -> Result<(), NoteError> {
-    let base_path: PathBuf = PathBuf::from(path);
+pub fn ensure_storage(path: &str, name: &str) -> Result<String, NoteError> {
+    let base_path = PathBuf::from(path);
+    let storage_path = base_path.join(name);
 
     if !base_path.exists() {
         return Err(NoteError::PathDoesNotExistError(anyhow!(
@@ -20,7 +21,7 @@ pub fn ensure_storage(path: &str, name: &str) -> Result<(), NoteError> {
         )));
     }
 
-    create_directory(&base_path).map_err(NoteError::PathCreationError)?;
+    create_directory(&storage_path).map_err(NoteError::PathCreationError)?;
 
-    Ok(())
+    Ok(storage_path.to_string_lossy().into_owned())
 }

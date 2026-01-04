@@ -3,7 +3,7 @@ use crate::domains::note::service::ensure_storage;
 use tauri::AppHandle;
 
 #[tauri::command]
-pub fn select_storage(_: AppHandle, selected_path: String) -> CommandResponse<()> {
+pub fn select_storage(_app_handle: AppHandle, selected_path: String) -> CommandResponse<()> {
     match ensure_storage(&selected_path, "codex") {
         Ok(_) => CommandResponse {
             success: true,

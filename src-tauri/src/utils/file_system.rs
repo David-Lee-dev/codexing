@@ -1,25 +1,21 @@
-use crate::models::config::AppConfig;
 use anyhow::{Context, Result};
 use std::fs;
-use std::path::{Path, PathBuf};
-use tracing::warn;
+use std::path::PathBuf;
 
+#[derive(PartialEq, Debug)]
 pub enum SaveMode {
     Overwrite,
     NoOverwrite,
 }
 
-pub fn save_file(path: &str, content: &str, save_mode: SaveMode) -> Result<()> {
-    let file_path: PathBuf = PathBuf::from(path);
-
-    if save_mode == SaveMode::Overwrite || !file_path.exists() {
-        fs::write(&file_path, content).context("Failed to save file")?;
+pub fn save_file(path: &PathBuf, content: &str, save_mode: SaveMode) -> Result<()> {
+    if save_mode == SaveMode::Overwrite || !path.exists() {
+        fs::write(path, content).context("Failed to save file")?;
     }
 
     Ok(())
 }
-
-pub fn read_file(file_path: &Path) -> Result<String> {
+pub fn read_file(file_path: &PathBuf) -> Result<String> {
     fs::read_to_string(file_path).context("Failed to read file")
 }
 
