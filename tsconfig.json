@@ -28,7 +28,8 @@
     ".next/types/**/*.ts",
     "next-env.d.ts",
     "dist/types/**/*.ts",
-    "src-tauri/src/commands/databse.rx"
+    "src-tauri/src/commands/databse.rx",
+    "src-tauri/src/utils/app_data.rx"
   ],
   "exclude": ["node_modules"]
 }

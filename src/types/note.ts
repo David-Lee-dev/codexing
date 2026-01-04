@@ -9,3 +9,13 @@ export interface Note {
   ai_tags?: string[];
 }
 
+export interface CreateNoteDto {
+  content: string;
+  title?: string;
+}
+
+export interface UpdateNoteDto {
+  id: string;
+  content: string;
+  title?: string;
+}
