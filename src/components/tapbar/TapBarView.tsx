@@ -6,7 +6,7 @@ interface TapBarViewProps {
   tabs: Tab[];
   onAddTab: () => void;
   onSwitchTab: (tab: Tab) => void;
-  onCloseTab: (tab: Tab) => void;
+  onCloseTab: (tab?: Tab) => void;
 }
 
 const TapBarView: React.FC<TapBarViewProps> = ({
@@ -32,7 +32,7 @@ const TapBarView: React.FC<TapBarViewProps> = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onCloseTab(tab);
+              onCloseTab(tab!);
             }}
             className={`
               flex items-center justify-center w-4 h-4 rounded-full transition-colors
