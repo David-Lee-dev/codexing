@@ -28,6 +28,7 @@ pub fn run() {
             domains::config::command::load_database,
             // Note
             domains::note::command::select_storage,
+            domains::note::command::get_document,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

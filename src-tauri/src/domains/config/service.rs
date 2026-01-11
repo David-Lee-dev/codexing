@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use tauri::AppHandle;
 use tracing::{error, info, instrument, warn};
 
-#[instrument(skip(app_handle))] // app_handle은 복잡한 객체이므로 로그 기록에서 제외
+#[instrument(skip(app_handle))]
 pub fn load_config(app_handle: &AppHandle) -> Result<AppConfig, ConfigError> {
     let config_file_path = get_app_data_path(app_handle)
         .map_err(|e| {

@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
-import { useTabStore } from '@/store/configStore';
+import { useTabStore } from '@/store/tabStore';
 
 export const useShortcut = () => {
   const { tabs, addTab, closeTab } = useTabStore();

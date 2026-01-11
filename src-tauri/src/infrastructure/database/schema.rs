@@ -19,7 +19,7 @@ pub fn init_schema(conn: &mut Connection) -> rusqlite::Result<()> {
         "CREATE TABLE IF NOT EXISTS blocks (
             id TEXT PRIMARY KEY,
             document_id TEXT NOT NULL,
-            type TEXT DEFAULT 'paragraph',
+            block_type TEXT,
             content TEXT,
             order_index REAL NOT NULL,
             source_document_id TEXT,

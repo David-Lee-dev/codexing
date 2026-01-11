@@ -30,6 +30,8 @@ dist-ssr
 # Custom Speckit
 .specify/
 .cursor/
+.claude/
+.reference/
 
 # Rust/Tauri
 src-tauri/target/

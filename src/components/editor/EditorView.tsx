@@ -2,89 +2,47 @@
 
 import React from 'react';
 
-import Placeholder from '@tiptap/extension-placeholder';
-import { EditorContent, useEditor } from '@tiptap/react';
-import { StarterKit } from '@tiptap/starter-kit';
+import { Block } from '@/types/block';
+
+import BlockComponent from './block/Block';
 
 interface EditorViewProps {
-  onPressEnter: (event: KeyboardEvent) => void;
-  onPressBackspace: (event: KeyboardEvent) => void;
-  onPressArrowUp: (event: KeyboardEvent) => void;
-  onPressArrowDown: (event: KeyboardEvent) => void;
-  onClickBlock: (event: MouseEvent) => void;
+  blocks: Block[];
+  title?: string;
+  onTitleChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const EditorView: React.FC<EditorViewProps> = ({
-  onPressEnter,
-  onPressBackspace,
-  onPressArrowUp,
-  onPressArrowDown,
-  onClickBlock: _onClickBlock,
+  blocks,
+  title = '',
+  onTitleChange,
 }) => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder: '메모를 작성하세요...',
-      }),
-    ],
-    immediatelyRender: false,
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none',
-      },
-      handleKeyDown: (view, event) => {
-        const { state } = view;
-        const { selection } = state;
-        const { $anchor } = selection;
-        const isEmpty = state.doc.textContent.trim().length === 0;
-
-        if (event.key === 'Enter' && !event.shiftKey) {
-          onPressEnter(event);
-        }
-
-        if (event.key === 'Backspace') {
-          onPressBackspace(event);
-        }
-
-        if (event.key === 'ArrowUp') {
-          onPressArrowUp(event);
-        }
-
-        if (event.key === 'ArrowDown') {
-          onPressArrowDown(event);
-        }
-
-        return false;
-      },
-    },
-  });
-
-  if (!editor) {
-    return null;
-  }
-
-  const handleFocus = () => {
-    console.log('Editor focused');
-  };
-
-  const handleBlur = () => {
-    console.log('Editor blurred');
-  };
-
-  const handleClick = () => {
-    console.log('Editor clicked');
-  };
-
   return (
-    <div className="w-full h-full bg-red-200 p-16 text-black flex flex-col">
-      <div className="bg-red-50 flex-shrink min-h-0">
-        <EditorContent
-          editor={editor}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          onClick={handleClick}
-        />
+    <div className="w-full h-full bg-stone-50 overflow-y-auto">
+      <div className="max-w-3xl mx-auto px-6 py-16 md:px-12 lg:px-16">
+        <div className="mb-8">
+          <input
+            type="text"
+            value={title}
+            onChange={onTitleChange}
+            placeholder="Untitled"
+            className="w-full text-4xl md:text-5xl font-light text-stone-800
+                       placeholder:text-stone-300 bg-transparent border-none
+                       outline-none focus:outline-none caret-stone-400
+                       tracking-tight leading-tight
+                       transition-colors duration-200"
+            style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
+          />
+          <div className="mt-4 h-px bg-gradient-to-r from-stone-200 via-stone-200 to-transparent" />
+        </div>
+
+        <div>
+          {blocks.map((block) => (
+            <BlockComponent key={block.id} block={block} />
+          ))}
+        </div>
+
+        <div className="h-48" />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { open } from '@tauri-apps/plugin-dialog';
 
-import ResponseHandler from '@/utils/responseHandler';
 import { Response } from '@/types/response';
+import ResponseHandler from '@/utils/responseHandler';
 
 import { invokeTauri } from './tauri-client';
 

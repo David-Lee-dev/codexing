@@ -1,5 +1,11 @@
 export interface Block {
   id: string;
-  content: string;
-  order: number;
+  documentId: string;
+  type: string | null;
+  content: string | null;
+  orderIndex: number;
+  sourceDocumentId: string | null;
+  indexingStatus: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

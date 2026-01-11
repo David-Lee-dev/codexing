@@ -1,1 +1,0 @@
-export { useTabStore } from './configStore';

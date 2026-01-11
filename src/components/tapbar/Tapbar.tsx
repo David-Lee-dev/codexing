@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 import { getConfig, saveConfig } from '@/api/config.api';
-import { useTabStore } from '@/store';
+import { useTabStore } from '@/store/tabStore';
 
 import TapbarView from './TapBarView';
 
