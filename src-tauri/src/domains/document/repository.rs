@@ -86,7 +86,7 @@ pub fn upsert_document(conn: &Connection, document: &Document) -> Result<()> {
              title = excluded.title,
              status = excluded.status,
              tags = excluded.tags,
-             updated_at = CURRENT_TIMESTAMP",
+             updated_at = datetime('now', 'localtime')",
         (&document.id, &document.title, &document.status, &tags_str),
     )?;
 
@@ -188,7 +188,7 @@ pub fn upsert_block(conn: &Connection, block: &Block) -> Result<()> {
                  ELSE blocks.indexing_status
              END,
              updated_at = CASE
-                 WHEN blocks.content IS NOT excluded.content THEN CURRENT_TIMESTAMP
+                 WHEN blocks.content IS NOT excluded.content THEN datetime('now', 'localtime')
                  ELSE blocks.updated_at
              END",
         (
@@ -268,6 +268,36 @@ pub fn find_similar_blocks(
     )
 }
 
+/// Returns (block_id, document_id, distance) for similar blocks
+pub fn find_similar_blocks_with_document(
+    conn: &Connection,
+    embedding: &[f32],
+    threshold: f32,
+    limit: i64,
+) -> Result<Vec<(String, String, f32)>> {
+    let embedding_bytes: Vec<u8> = embedding.iter().flat_map(|f| f.to_le_bytes()).collect();
+
+    query_all(
+        conn,
+        "SELECT b.id, b.document_id, v.distance
+         FROM vec_blocks v
+         JOIN blocks b ON b.rowid = v.rowid
+         WHERE v.embedding MATCH ?1
+           AND k = ?2
+           AND v.distance < ?3",
+        rusqlite::params![&embedding_bytes, limit, threshold],
+        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+    )
+}
+
+pub fn delete_block_vector(conn: &Connection, block_id: &str) -> Result<()> {
+    conn.execute(
+        "DELETE FROM vec_blocks WHERE rowid IN (SELECT rowid FROM blocks WHERE id = ?)",
+        rusqlite::params![block_id],
+    )?;
+    Ok(())
+}
+
 // ============================================
 // Edge Repository
 // ============================================
@@ -292,6 +322,28 @@ pub fn upsert_edge(
 
 pub fn delete_edges_by_source(conn: &Connection, source_id: &str) -> Result<()> {
     conn.execute("DELETE FROM edges WHERE source_id = ?", [source_id])?;
+    Ok(())
+}
+
+pub fn delete_edges_by_target(conn: &Connection, target_id: &str) -> Result<()> {
+    conn.execute("DELETE FROM edges WHERE target_id = ?", [target_id])?;
+    Ok(())
+}
+
+pub fn find_edges_by_source_id(conn: &Connection, source_id: &str) -> Result<Vec<(String, f64)>> {
+    query_all(
+        conn,
+        "SELECT target_id, weight FROM edges WHERE source_id = ?",
+        [source_id],
+        |row| Ok((row.get(0)?, row.get(1)?)),
+    )
+}
+
+pub fn delete_edge(conn: &Connection, source_id: &str, target_id: &str) -> Result<()> {
+    conn.execute(
+        "DELETE FROM edges WHERE source_id = ? AND target_id = ?",
+        [source_id, target_id],
+    )?;
     Ok(())
 }
 

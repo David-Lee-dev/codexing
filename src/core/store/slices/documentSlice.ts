@@ -1,4 +1,5 @@
 import { BlockFactory } from '@/shared/lib/factory';
+import { documentApi } from '@/shared/api/document.api';
 
 import type { Document, Block } from '@/core/types';
 import type { StateCreator } from 'zustand';
@@ -123,6 +124,9 @@ export const createDocumentSlice: StateCreator<
       blockInEditing: newDocument.blocks[eventTriggeredBlockIndex - 1],
       cursorOffset: INFINITY_POSITION,
     });
+
+    // Delete block from backend (with edges and vectors)
+    documentApi.deleteBlock(eventTriggeredBlock.id);
   },
   switchToPreviousBlock: (eventTriggeredBlock: Block, cursorOffset: number) => {
     const document = get().document;

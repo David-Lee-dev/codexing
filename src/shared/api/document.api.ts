@@ -15,6 +15,10 @@ export const documentApi = {
     return invokeTauri<boolean>('delete_document', { documentId });
   },
 
+  async deleteBlock(blockId: string): Promise<ApiResponse<void>> {
+    return invokeTauri<void>('delete_block', { blockId });
+  },
+
   async listDocuments(): Promise<ApiResponse<Document[]>> {
     return invokeTauri<Document[]>('list_documents');
   },

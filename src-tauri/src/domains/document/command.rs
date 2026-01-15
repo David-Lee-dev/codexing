@@ -87,3 +87,25 @@ pub fn retrieve_document(
     }
 }
 
+// ============================================
+// Block Commands
+// ============================================
+
+#[tauri::command]
+pub fn delete_block(app_handle: AppHandle, block_id: String) -> CommandResponse<()> {
+    match service::delete_block(&app_handle, &block_id) {
+        Ok(_) => CommandResponse {
+            success: true,
+            code: 200,
+            message: "Block deleted successfully".to_string(),
+            data: None,
+        },
+        Err(_) => CommandResponse {
+            success: false,
+            code: 500,
+            message: "Failed to delete block".to_string(),
+            data: None,
+        },
+    }
+}
+

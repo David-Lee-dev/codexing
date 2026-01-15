@@ -2,6 +2,7 @@ mod domains;
 mod infrastructure;
 mod utils;
 
+use crate::domains::document::scheduler::INDEXING_SCHEDULER;
 use crate::utils::shortcuts::AppShortcuts;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -19,6 +20,12 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             AppShortcuts::setup_menu(app.handle())?;
+
+            let handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                INDEXING_SCHEDULER.start(handle).await;
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -32,6 +39,8 @@ pub fn run() {
             domains::document::command::get_document,
             domains::document::command::save_document,
             domains::document::command::retrieve_document,
+            // Block
+            domains::document::command::delete_block,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -101,6 +101,28 @@ pub fn get_block(app_handle: &AppHandle, block_id: &str) -> Result<Option<Block>
         .map_err_log("get_block::find_block_by_id", DocumentError::DatabaseQueryError)
 }
 
+pub fn delete_block(app_handle: &AppHandle, block_id: &str) -> Result<(), DocumentError> {
+    let conn = get_connection(app_handle)?;
+
+    // Delete edges where this block is the source
+    repository::delete_edges_by_source(&conn, block_id)
+        .map_err_log("delete_block::delete_edges_by_source", DocumentError::DatabaseQueryError)?;
+
+    // Delete edges where this block is the target
+    repository::delete_edges_by_target(&conn, block_id)
+        .map_err_log("delete_block::delete_edges_by_target", DocumentError::DatabaseQueryError)?;
+
+    // Delete block vector
+    repository::delete_block_vector(&conn, block_id)
+        .map_err_log("delete_block::delete_block_vector", DocumentError::DatabaseQueryError)?;
+
+    // Delete the block itself
+    repository::delete_block(&conn, block_id)
+        .map_err_log("delete_block::delete_block", DocumentError::DatabaseQueryError)?;
+
+    Ok(())
+}
+
 // ============================================
 // Indexing Service
 // ============================================
@@ -146,6 +168,18 @@ pub fn find_similar_blocks(
         .map_err_log("find_similar_blocks", DocumentError::DatabaseQueryError)
 }
 
+pub fn find_similar_blocks_with_document(
+    app_handle: &AppHandle,
+    embedding: &[f32],
+    threshold: f32,
+    limit: i64,
+) -> Result<Vec<(String, String, f32)>, DocumentError> {
+    let conn = get_connection(app_handle)?;
+
+    repository::find_similar_blocks_with_document(&conn, embedding, threshold, limit)
+        .map_err_log("find_similar_blocks_with_document", DocumentError::DatabaseQueryError)
+}
+
 // ============================================
 // Edge Service
 // ============================================
@@ -161,4 +195,25 @@ pub fn create_edge(
 
     repository::upsert_edge(&conn, source_id, target_id, relation_type, weight)
         .map_err_log("create_edge::upsert_edge", DocumentError::DatabaseQueryError)
+}
+
+pub fn find_edges_by_source(
+    app_handle: &AppHandle,
+    source_id: &str,
+) -> Result<Vec<(String, f64)>, DocumentError> {
+    let conn = get_connection(app_handle)?;
+
+    repository::find_edges_by_source_id(&conn, source_id)
+        .map_err_log("find_edges_by_source", DocumentError::DatabaseQueryError)
+}
+
+pub fn delete_edge(
+    app_handle: &AppHandle,
+    source_id: &str,
+    target_id: &str,
+) -> Result<(), DocumentError> {
+    let conn = get_connection(app_handle)?;
+
+    repository::delete_edge(&conn, source_id, target_id)
+        .map_err_log("delete_edge", DocumentError::DatabaseQueryError)
 }

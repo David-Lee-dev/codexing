@@ -1,7 +1,7 @@
-use crate::domains::document::error::DocumentError;
 use crate::domains::document::model::Block;
 use crate::domains::document::service;
 use once_cell::sync::Lazy;
+use std::collections::HashSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
@@ -10,9 +10,9 @@ use tokio::sync::Mutex;
 use tokio::time::sleep;
 use tracing::{error, info};
 
-// ============================================
-// Scheduler State
-// ============================================
+const EMBEDDING_DIMENSION: usize = 384;
+const SIMILARITY_THRESHOLD: f32 = 0.5;
+const SIMILARITY_SEARCH_LIMIT: i64 = 100;
 
 pub struct IndexingScheduler {
     is_running: AtomicBool,
@@ -28,13 +28,11 @@ impl IndexingScheduler {
     }
 
     pub async fn start(&self, app_handle: AppHandle) {
-        // Store app_handle
         {
             let mut handle = self.app_handle.lock().await;
             *handle = Some(app_handle);
         }
 
-        // Start the background task
         if !self.is_running.swap(true, Ordering::SeqCst) {
             info!("Indexing scheduler started");
             self.run_loop().await;
@@ -48,22 +46,15 @@ impl IndexingScheduler {
 
     async fn run_loop(&self) {
         while self.is_running.load(Ordering::SeqCst) {
-            // Get app_handle
             let app_handle = {
                 let handle = self.app_handle.lock().await;
                 handle.clone()
             };
 
             if let Some(ref handle) = app_handle {
-                match self.process_next_block(handle).await {
-                    Ok(true) => {
-                        // Block processed, continue immediately
-                        continue;
-                    }
-                    Ok(false) => {
-                        // No pending blocks, wait before checking again
-                        sleep(Duration::from_secs(5)).await;
-                    }
+                match self.process_next_block(handle) {
+                    Ok(true) => continue,
+                    Ok(false) => sleep(Duration::from_secs(5)).await,
                     Err(e) => {
                         error!("Error processing block: {:?}", e);
                         sleep(Duration::from_secs(10)).await;
@@ -75,28 +66,73 @@ impl IndexingScheduler {
         }
     }
 
-    async fn process_next_block(&self, app_handle: &AppHandle) -> Result<bool, DocumentError> {
-        // Find the oldest pending block
+    fn process_next_block(&self, app_handle: &AppHandle) -> anyhow::Result<bool> {
         let block = match service::get_oldest_pending_block(app_handle)? {
             Some(block) => block,
             None => return Ok(false),
         };
 
+        let content = block.content.as_deref().unwrap_or("");
+        if content.trim().is_empty() {
+            service::update_block_indexing_status(app_handle, &block.id, 1)?;
+            info!("Block skipped (empty content): {}", block.id);
+            return Ok(true);
+        }
+
         info!("Processing block: {}", block.id);
 
-        // Calculate embedding
-        let embedding = calculate_embedding(&block)?;
-
-        // Save the vector
+        // 1. Calculate and save embedding
+        let embedding = calculate_embedding(&block);
         service::save_block_vector(app_handle, &block.id, &embedding)?;
+
+        // 2. Sync edges for this document
+        self.sync_document_edges(app_handle, &block.document_id, &embedding)?;
 
         service::update_block_indexing_status(app_handle, &block.id, 1)?;
 
-        // Find similar blocks and create edges
-        create_similarity_edges(app_handle, &block, &embedding)?;
-
-        info!("Block indexed successfully: {}", block.id);
+        info!("Block indexed: {}", block.id);
         Ok(true)
+    }
+
+    fn sync_document_edges(
+        &self,
+        app_handle: &AppHandle,
+        document_id: &str,
+        embedding: &[f32],
+    ) -> anyhow::Result<()> {
+        // A group: Find similar documents via vector search
+        let similar_blocks = service::find_similar_blocks_with_document(
+            app_handle,
+            embedding,
+            SIMILARITY_THRESHOLD,
+            SIMILARITY_SEARCH_LIMIT,
+        )?;
+
+        // Collect unique document IDs from similar blocks (excluding self)
+        let similar_doc_ids: HashSet<String> = similar_blocks
+            .into_iter()
+            .map(|(_, doc_id, _)| doc_id)
+            .filter(|doc_id| doc_id != document_id)
+            .collect();
+
+        // B group: Get existing edge target documents
+        let existing_edges = service::find_edges_by_source(app_handle, document_id)?;
+        let existing_doc_ids: HashSet<String> =
+            existing_edges.into_iter().map(|(target_id, _)| target_id).collect();
+
+        // Add edges for documents in A but not in B
+        for doc_id in similar_doc_ids.difference(&existing_doc_ids) {
+            service::create_edge(app_handle, document_id, doc_id, Some("similar"), 1.0)?;
+            info!("Edge added: {} -> {}", document_id, doc_id);
+        }
+
+        // Remove edges for documents in B but not in A
+        for doc_id in existing_doc_ids.difference(&similar_doc_ids) {
+            service::delete_edge(app_handle, document_id, doc_id)?;
+            info!("Edge removed: {} -> {}", document_id, doc_id);
+        }
+
+        Ok(())
     }
 }
 
@@ -106,110 +142,27 @@ impl Default for IndexingScheduler {
     }
 }
 
-// ============================================
-// Embedding Calculation
-// ============================================
-
-fn calculate_embedding(block: &Block) -> Result<Vec<f32>, DocumentError> {
-    // TODO: Implement actual embedding calculation using a model
-    // For now, return a placeholder embedding
-
+fn calculate_embedding(block: &Block) -> Vec<f32> {
     let content = block.content.as_deref().unwrap_or("");
+    let mut embedding = vec![0.0f32; EMBEDDING_DIMENSION];
 
-    // Simple placeholder: create a 384-dimensional vector based on content hash
-    // This should be replaced with actual embedding model (e.g., sentence-transformers)
-    let mut embedding = vec![0.0f32; 384];
+    if content.is_empty() {
+        return embedding;
+    }
 
-    if !content.is_empty() {
-        // Simple hash-based placeholder
-        for (i, c) in content.chars().enumerate() {
-            let idx = i % 384;
-            embedding[idx] += (c as u32 as f32) / 1000.0;
-        }
+    for (i, c) in content.chars().enumerate() {
+        let idx = i % EMBEDDING_DIMENSION;
+        embedding[idx] += (c as u32 as f32) / 1000.0;
+    }
 
-        // Normalize
-        let magnitude: f32 = embedding.iter().map(|x| x * x).sum::<f32>().sqrt();
-        if magnitude > 0.0 {
-            for val in &mut embedding {
-                *val /= magnitude;
-            }
+    let magnitude: f32 = embedding.iter().map(|x| x * x).sum::<f32>().sqrt();
+    if magnitude > 0.0 {
+        for val in &mut embedding {
+            *val /= magnitude;
         }
     }
 
-    Ok(embedding)
+    embedding
 }
-
-// ============================================
-// Edge Creation
-// ============================================
-
-fn create_similarity_edges(
-    app_handle: &AppHandle,
-    source_block: &Block,
-    embedding: &[f32],
-) -> Result<(), DocumentError> {
-    const SIMILARITY_THRESHOLD: f32 = 0.8;
-    const MAX_SIMILAR_BLOCKS: i64 = 10;
-
-    // Find similar blocks
-    let similar_blocks = service::find_similar_blocks(
-        app_handle,
-        embedding,
-        SIMILARITY_THRESHOLD,
-        MAX_SIMILAR_BLOCKS,
-    )?;
-
-    // Get source document ID
-    let source_doc_id = &source_block.document_id;
-
-    // Create edges between documents
-    for (similar_block_id, distance) in similar_blocks {
-        // Skip self
-        if similar_block_id == source_block.id {
-            continue;
-        }
-
-        // Get the similar block to find its document
-        if let Some(similar_block) = service::get_block(app_handle, &similar_block_id)? {
-            let target_doc_id = &similar_block.document_id;
-
-            // Skip if same document
-            if source_doc_id == target_doc_id {
-                continue;
-            }
-
-            // Calculate weight (inverse of distance, higher is more similar)
-            let weight = 1.0 - distance as f64;
-
-            // Create bidirectional edges
-            service::create_edge(
-                app_handle,
-                source_doc_id,
-                target_doc_id,
-                Some("SIMILAR"),
-                weight,
-            )?;
-
-            service::create_edge(
-                app_handle,
-                target_doc_id,
-                source_doc_id,
-                Some("SIMILAR"),
-                weight,
-            )?;
-
-            info!(
-                "Created edge: {} <-> {} (weight: {:.3})",
-                source_doc_id, target_doc_id, weight
-            );
-        }
-    }
-
-    Ok(())
-}
-
-// ============================================
-// Global Scheduler Instance
-// ============================================
 
 pub static INDEXING_SCHEDULER: Lazy<IndexingScheduler> = Lazy::new(IndexingScheduler::new);
