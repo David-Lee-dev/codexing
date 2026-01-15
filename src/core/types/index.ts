@@ -4,7 +4,6 @@ export type {
   Document,
   Block,
   DocumentStatus,
-  BlockType,
   IndexingStatus,
   CursorPosition,
 } from './document';

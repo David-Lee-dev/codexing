@@ -10,13 +10,18 @@ pub fn load_sqlite_vec_extension(conn: &Connection, app_handle: &AppHandle) -> R
         .resolve(&extension_path, BaseDirectory::Resource)
         .context("Failed to resolve sqlite-vec extension path")?;
 
-    if !absolute_path.exists() {
-        return Err(anyhow!("sqlite-vec extension file does not exist"));
-    }
-
     unsafe {
+        if !absolute_path.exists() {
+            return Err(anyhow!("sqlite-vec extension file does not exist"));
+        }
+
+        conn.load_extension_enable()
+            .context("Failed to enable loading SQLite extensions")?;
+
         conn.load_extension(&absolute_path, Some("sqlite3_vec_init"))
             .context("Failed to load sqlite-vec extension")?;
+
+        let _ = conn.load_extension_disable();
     }
 
     Ok(())

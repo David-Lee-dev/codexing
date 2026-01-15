@@ -4,7 +4,7 @@ use rusqlite::Error as RusqliteError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum NoteError {
+pub enum DocumentError {
     #[error("Path does not exist")]
     PathDoesNotExistError(AnyhowError),
 

@@ -22,13 +22,16 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            // Config
             domains::config::command::load_config,
             domains::config::command::save_config,
             domains::config::command::init_database,
             domains::config::command::load_database,
-            // Note
-            domains::note::command::select_storage,
-            domains::note::command::get_document,
+            // Document
+            domains::document::command::select_storage,
+            domains::document::command::get_document,
+            domains::document::command::save_document,
+            domains::document::command::retrieve_document,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

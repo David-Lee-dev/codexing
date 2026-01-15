@@ -31,5 +31,5 @@
     "src-tauri/src/commands/databse.rx",
     "src-tauri/src/utils/app_data.rx"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src_archived"]
 }

@@ -487,6 +487,7 @@ dependencies = [
  "anyhow",
  "dotenv",
  "ndarray 0.15.6",
+ "once_cell",
  "ort",
  "rusqlite",
  "serde",

@@ -9,27 +9,17 @@ export interface Document {
 export interface Block {
   id: string;
   documentId: string;
-  type: BlockType | null;
   content: string | null;
   orderIndex: number;
   sourceDocumentId: string | null;
   indexingStatus: IndexingStatus;
 }
 
-// Document Status
-export type DocumentStatus = 'draft' | 'published' | 'archived';
+// Document Status: 0 = FLEETING, 1 = PERMANENT, 99 = ARCHIVED
+export type DocumentStatus = number;
 
-// Block Type
-export type BlockType =
-  | 'text'
-  | 'heading'
-  | 'list'
-  | 'code'
-  | 'quote'
-  | 'image';
-
-// Indexing Status
-export type IndexingStatus = 'pending' | 'indexed' | 'failed';
+// Indexing Status: 0 = PENDING, 1 = INDEXED, 2 = FAILED
+export type IndexingStatus = number;
 
 // Cursor Position
 export interface CursorPosition {

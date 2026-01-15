@@ -9,7 +9,7 @@ export class DocumentFactory {
     return {
       id,
       title: null,
-      status: 'draft',
+      status: 0,
       tags: null,
       blocks: [BlockFactory.create(id)],
       ...overrides,
@@ -22,11 +22,10 @@ export class BlockFactory {
     return {
       id: uuidv4(),
       documentId,
-      type: 'text',
       content: null,
       orderIndex: 0,
       sourceDocumentId: null,
-      indexingStatus: 'pending',
+      indexingStatus: 0,
       ...overrides,
     };
   }

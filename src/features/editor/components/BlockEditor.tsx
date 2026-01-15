@@ -31,7 +31,6 @@ const BlockEditorComponent: React.FC<BlockEditorProps> = ({ block }) => {
     () =>
       debounce((blockToUpdate: Block, text: string) => {
         getStoreActions().updateBlockContent(blockToUpdate, text);
-        console.log('debouncedUpdateContent', blockToUpdate, text);
       }, 500),
     [],
   );

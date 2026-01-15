@@ -23,7 +23,7 @@
       { "argsIgnorePattern": "^_" }
     ],
     "@typescript-eslint/no-explicit-any": "warn",
-
+    "react-hooks/exhaustive-deps": "off",
     // Import 순서 정렬 (대중적 표준)
     "import/order": [
       "error",

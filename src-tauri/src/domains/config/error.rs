@@ -4,30 +4,30 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum ConfigError {
-    #[error("Failed to get app data path")]
-    AppDataPath(AnyhowError),
+    #[error("Failed to get app data path: {0}")]
+    AppDataPath(#[source] AnyhowError),
 
-    #[error("Failed to parse config file")]
-    ConfigParsing(AnyhowError),
+    #[error("Failed to parse config file: {0}")]
+    ConfigParsing(#[source] AnyhowError),
 
-    #[error("Failed to serialize config file")]
-    ConfigSerializing(AnyhowError),
+    #[error("Failed to serialize config file: {0}")]
+    ConfigSerializing(#[source] AnyhowError),
 
-    #[error("Failed to read config file")]
-    ConfigReading(AnyhowError),
+    #[error("Failed to read config file: {0}")]
+    ConfigReading(#[source] AnyhowError),
 
-    #[error("Failed to save config file")]
-    ConfigSaving(AnyhowError),
+    #[error("Failed to save config file: {0}")]
+    ConfigSaving(#[source] AnyhowError),
 
-    #[error("Failed to create database connection")]
-    DatabaseConnectionCreation(RusqliteError),
+    #[error("Failed to create database connection: {0}")]
+    DatabaseConnectionCreation(#[source] RusqliteError),
 
-    #[error("Failed to load sqlite-vec extension")]
-    DatabaseExtensionLoading(AnyhowError),
+    #[error("Failed to load sqlite-vec extension: {0}")]
+    DatabaseExtensionLoading(#[source] AnyhowError),
 
-    #[error("Failed to initialize schema")]
-    DatabaseSchemaInitialization(RusqliteError),
+    #[error("Failed to initialize schema: {0}")]
+    DatabaseSchemaInitialization(#[source] RusqliteError),
 
-    #[error("Failed to run migrations")]
-    DatabaseMigrationsRunning(RusqliteError),
+    #[error("Failed to run migrations: {0}")]
+    DatabaseMigrationsRunning(#[source] RusqliteError),
 }
