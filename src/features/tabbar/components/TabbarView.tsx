@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { memo } from 'react';
 
 import type { Tab } from '@/core/types';
 
@@ -11,7 +11,7 @@ export interface TabbarViewProps {
   onAddTab: () => void;
 }
 
-export const TabbarView: React.FC<TabbarViewProps> = ({
+const TabbarViewComponent: React.FC<TabbarViewProps> = ({
   tabs,
   onSwitchTab,
   onCloseTab,
@@ -25,7 +25,7 @@ export const TabbarView: React.FC<TabbarViewProps> = ({
       {/* 탭 목록 + 새 탭 버튼 */}
       <div className="flex items-center gap-0.5 flex-1 overflow-x-auto hide-scrollbar">
         {tabs.map((tab) => (
-          <TabItem
+          <TabItemMemo
             key={tab.documentId}
             tab={tab}
             title={tab.title || 'Untitled'}
@@ -62,6 +62,18 @@ export const TabbarView: React.FC<TabbarViewProps> = ({
     </div>
   );
 };
+
+export const TabbarView = memo(TabbarViewComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.tabs.length === nextProps.tabs.length &&
+    prevProps.tabs.every(
+      (tab, idx) =>
+        tab.documentId === nextProps.tabs[idx].documentId &&
+        tab.isActive === nextProps.tabs[idx].isActive &&
+        tab.title === nextProps.tabs[idx].title,
+    )
+  );
+});
 
 // TabItem 컴포넌트
 interface TabItemProps {
@@ -144,3 +156,13 @@ const TabItem: React.FC<TabItemProps> = ({ tab, title, onSwitch, onClose }) => {
     </div>
   );
 };
+
+const TabItemMemo = memo(TabItem, (prevProps, nextProps) => {
+  return (
+    prevProps.tab.documentId === nextProps.tab.documentId &&
+    prevProps.tab.isActive === nextProps.tab.isActive &&
+    prevProps.title === nextProps.title
+  );
+});
+
+TabItemMemo.displayName = 'TabItem';
