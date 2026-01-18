@@ -1,4 +1,4 @@
-import type { Block, Document, DocumentStatus } from '@/core/types';
+import type { Block } from '@/core/types';
 import type { StateCreator } from 'zustand';
 
 // ============================================
@@ -38,7 +38,7 @@ export const createEditorSlice: StateCreator<
   [],
   [],
   EditorSlice
-> = (set, get) => ({
+> = (set) => ({
   ...initialEditorState,
   setId: (id: string) => {
     set({ id });

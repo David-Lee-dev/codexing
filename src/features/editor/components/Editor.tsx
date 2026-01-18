@@ -1,15 +1,17 @@
 'use client';
 
-import React from 'react';
+import { memo } from 'react';
 
 import { useDocument } from '@/core/store';
 
 import { EditorView } from './EditorView';
 
-export const Editor: React.FC = () => {
+const EditorComponent: React.FC = () => {
   const document = useDocument();
 
   if (!document) return <div></div>;
 
   return <EditorView />;
 };
+
+export const Editor = memo(EditorComponent);
