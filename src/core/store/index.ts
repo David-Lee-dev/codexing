@@ -40,10 +40,9 @@ export const useIsDatabaseInitialized = () =>
 
 // TabSlice
 export const useTabs = () => useAppStore((state) => state.tabs);
-export const useActiveTab = () =>
-  useAppStore((state) => state.tabs.find((t) => t.isActive));
+export const useActiveTab = () => useAppStore((state) => state.activeTab);
 export const useActiveDocumentId = () =>
-  useAppStore((state) => state.tabs.find((t) => t.isActive)?.documentId);
+  useAppStore((state) => state.activeDocumentId);
 // DocumentSlice
 export const useDocument = () => useAppStore((state) => state.document);
 export const useBlockInEditing = () =>

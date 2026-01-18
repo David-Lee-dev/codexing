@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { useDocument } from '@/core/store';
-import { documentApi } from '@/shared/api';
+import { documentApi } from '@/shared/api/document.api';
 
 const DEBOUNCE_DELAY = 500; // ms
 
@@ -14,7 +14,12 @@ export function useAutoSave() {
   useEffect(() => {
     if (!document) return;
 
-    const documentHash = JSON.stringify(document);
+    const documentState = {
+      id: document.id,
+      title: document.title,
+      blocks: document.blocks,
+    };
+    const documentHash = JSON.stringify(documentState);
     if (documentHash === lastSavedRef.current) return;
 
     if (timeoutRef.current) {

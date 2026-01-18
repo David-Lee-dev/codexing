@@ -7,6 +7,8 @@ import type { StateCreator } from 'zustand';
 
 export interface TabSliceState {
   tabs: Tab[];
+  activeTab: Tab | undefined;
+  activeDocumentId: string | undefined;
 }
 
 export interface TabSliceActions {
@@ -23,6 +25,8 @@ export type TabSlice = TabSliceState & TabSliceActions;
 
 const initialTabState: TabSliceState = {
   tabs: [],
+  activeTab: undefined,
+  activeDocumentId: undefined,
 };
 
 // ============================================
@@ -40,15 +44,26 @@ export const createTabSlice: StateCreator<TabSlice, [], [], TabSlice> = (
       ...get().tabs.map((t) => ({ ...t, isActive: false })),
       tab,
     ];
+    const activeTab = newTabs.find((t) => t.isActive);
 
-    set({ tabs: newTabs });
+    set({
+      tabs: newTabs,
+      activeTab,
+      activeDocumentId: activeTab?.documentId,
+    });
   },
   switchTab: (tab: Tab) => {
     const newTabs = get().tabs.map((t) => ({
       ...t,
       isActive: t.documentId === tab.documentId,
     }));
-    set({ tabs: newTabs });
+    const activeTab = newTabs.find((t) => t.isActive);
+
+    set({
+      tabs: newTabs,
+      activeTab,
+      activeDocumentId: activeTab?.documentId,
+    });
   },
   popTab: (tab: Tab) => {
     const currentTabs = get().tabs;
@@ -64,7 +79,12 @@ export const createTabSlice: StateCreator<TabSlice, [], [], TabSlice> = (
       ...t,
       isActive: index === focusedTabIndex,
     }));
+    const activeTab = newTabs.find((t) => t.isActive);
 
-    set({ tabs: newTabs });
+    set({
+      tabs: newTabs,
+      activeTab,
+      activeDocumentId: activeTab?.documentId,
+    });
   },
 });
