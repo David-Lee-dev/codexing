@@ -4,7 +4,7 @@ import React, { useCallback } from 'react';
 
 import { getStoreActions, useTabs } from '@/core/store';
 import { Tab } from '@/core/types';
-import { documentApi } from '@/shared/api';
+import { documentApi } from '@/shared/api/document.api';
 import { DocumentFactory } from '@/shared/lib/factory';
 
 import { TabbarView } from './TabbarView';

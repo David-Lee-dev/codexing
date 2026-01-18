@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 import { getStoreActions, useActiveDocumentId } from '@/core/store';
-import { documentApi } from '@/shared/api';
+import { documentApi } from '@/shared/api/document.api';
 
 export function useEditing() {
   const activeDocumentId = useActiveDocumentId();

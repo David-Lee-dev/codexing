@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { useTabs } from '@/core/store';
-import { configApi } from '@/shared/api';
+import { configApi } from '@/shared/api/config.api';
 
 const DEBOUNCE_DELAY = 250;
 

@@ -1,13 +1,11 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { listen } from '@tauri-apps/api/event';
-import { getCurrentWindow } from '@tauri-apps/api/window';
 
+import { getStoreActions, useAppStore } from '@/core/store';
 import { Tab } from '@/core/types';
+import { documentApi } from '@/shared/api/document.api';
 import { DocumentFactory } from '@/shared/lib/factory';
-
-import { getStoreActions, useAppStore } from '../../core/store';
-import { documentApi } from '../api';
 
 type ShortcutAction = () => void | Promise<void>;
 

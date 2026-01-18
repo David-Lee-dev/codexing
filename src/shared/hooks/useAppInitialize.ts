@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 import { useAppStore } from '@/core/store';
-import { configApi } from '@/shared/api';
+import { configApi } from '@/shared/api/config.api';
 
 export function useAppInitialize() {
   const isInitialized = useAppStore((state) => state.isInitialized);

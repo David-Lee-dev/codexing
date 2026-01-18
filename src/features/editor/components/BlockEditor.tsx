@@ -13,7 +13,7 @@ import {
   useBlockInEditing,
   useCursorOffset,
 } from '@/core/store';
-import { EditorManager } from '@/shared/lib';
+import { EditorManager } from '@/shared/lib/editorManager';
 
 import { BlockEditorView } from './BlockEditorView';
 

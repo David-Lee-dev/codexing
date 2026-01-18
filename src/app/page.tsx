@@ -2,25 +2,37 @@
 
 import React from 'react';
 
+import dynamic from 'next/dynamic';
+
 import {
   useIsDatabaseInitialized,
   useIsLoading,
   useIsStorageSelected,
   useDocument,
 } from '@/core/store';
-import { Editor } from '@/features/editor';
-import { Onboarding } from '@/features/onboarding';
-import { Sidebar } from '@/features/sidebar';
-import { Tabbar } from '@/features/tabbar';
-import { Welcome } from '@/features/welcome';
-import {
-  useAppInitialize,
-  useShortcut,
-  useTabSync,
-  useEditing,
-  useAutoSave,
-} from '@/shared/hooks';
+import { Editor } from '@/features/editor/components/Editor';
+import { Sidebar } from '@/features/sidebar/components/Sidebar';
+import { Tabbar } from '@/features/tabbar/components/Tabbar';
+import { useAppInitialize } from '@/shared/hooks/useAppInitialize';
+import { useAutoSave } from '@/shared/hooks/useAutoSave';
+import { useEditing } from '@/shared/hooks/useEditing';
+import { useShortcut } from '@/shared/hooks/useShortcut';
+import { useTabSync } from '@/shared/hooks/useTabSync';
 import { Loading } from '@/shared/ui/Loading';
+
+const Onboarding = dynamic(
+  () =>
+    import('@/features/onboarding/components/Onboarding').then(
+      (mod) => mod.Onboarding,
+    ),
+  { loading: () => <Loading /> },
+);
+
+const Welcome = dynamic(
+  () =>
+    import('@/features/welcome/components/Welcome').then((mod) => mod.Welcome),
+  { loading: () => null },
+);
 
 export default function App() {
   useAppInitialize();

@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { getStoreActions } from '@/core/store';
-import { configApi } from '@/shared/api';
+import { configApi } from '@/shared/api/config.api';
 
 import { OnboardingView } from './OnboardingView';
 
