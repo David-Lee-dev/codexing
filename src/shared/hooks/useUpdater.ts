@@ -57,12 +57,20 @@ export function useUpdater(): UseUpdaterResult {
       setStatus('downloading');
       setProgress(0);
 
+      let downloadedBytes = 0;
+      let totalBytes = 0;
+
       await pendingUpdate.downloadAndInstall((event) => {
-        if (event.event === 'Started' && event.data.contentLength) {
+        if (event.event === 'Started') {
+          totalBytes = event.data.contentLength ?? 0;
+          downloadedBytes = 0;
           setProgress(0);
         } else if (event.event === 'Progress') {
-          const percent = Math.round((event.data.chunkLength / (event.data.contentLength || 1)) * 100);
-          setProgress((prev) => Math.min(prev + percent, 100));
+          downloadedBytes += event.data.chunkLength;
+          if (totalBytes > 0) {
+            const percent = Math.round((downloadedBytes / totalBytes) * 100);
+            setProgress(Math.min(percent, 100));
+          }
         } else if (event.event === 'Finished') {
           setProgress(100);
         }
