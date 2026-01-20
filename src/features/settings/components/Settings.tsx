@@ -7,7 +7,7 @@ import { useUpdater } from '@/shared/hooks/useUpdater';
 import { SettingsView } from './SettingsView';
 import { useSettings } from '../hooks/useSettings';
 
-const APP_VERSION = '0.1.0';
+const APP_VERSION = '0.2.0';
 
 export const Settings: React.FC = () => {
   const {
