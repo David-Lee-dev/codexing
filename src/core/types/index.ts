@@ -5,7 +5,9 @@ export type {
   VectorSettings,
   GraphColors,
   GraphSettings,
+  GeminiModel,
 } from './config';
+export { GEMINI_MODELS } from './config';
 export type { ApiResponse } from './api';
 export type {
   Document,
