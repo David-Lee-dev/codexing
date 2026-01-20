@@ -9,7 +9,8 @@ export async function registerDocumentEventHandlers(): Promise<void> {
   isRegistered = true;
 
   await tauriEventManager.subscribe('document-deleted', (payload) => {
-    const { removeDocumentFromList, removeDocumentFromGraph } = getStoreActions();
+    const { removeDocumentFromList, removeDocumentFromGraph } =
+      getStoreActions();
     removeDocumentFromList(payload.documentId);
     removeDocumentFromGraph(payload.documentId);
   });

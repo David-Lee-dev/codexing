@@ -7,6 +7,10 @@ const nextConfig = {
   },
   // Tauri requires static export
   trailingSlash: true,
+  // Skip ESLint during production builds (already run separately in CI)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;

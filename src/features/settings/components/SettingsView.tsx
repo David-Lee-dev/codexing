@@ -5,14 +5,13 @@ import React from 'react';
 import { GEMINI_MODELS } from '@/core/types';
 import { ColorPicker } from '@/shared/ui/ColorPicker';
 
-import type { UpdateStatus } from '@/shared/hooks/useUpdater';
-
 import type {
   GeminiModel,
   GraphColors,
   GraphSettings,
   VectorSettings,
 } from '@/core/types';
+import type { UpdateStatus } from '@/shared/hooks/useUpdater';
 
 interface UpdateInfo {
   version: string;
@@ -259,9 +258,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="border-t border-ctp-surface0" />
 
           <section>
-            <h3 className="text-sm font-medium text-ctp-text mb-4">
-              Updates
-            </h3>
+            <h3 className="text-sm font-medium text-ctp-text mb-4">Updates</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>

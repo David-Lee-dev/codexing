@@ -1,8 +1,15 @@
 import { useState, useCallback } from 'react';
-import { check, Update } from '@tauri-apps/plugin-updater';
-import { relaunch } from '@tauri-apps/plugin-process';
 
-export type UpdateStatus = 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'error';
+import { relaunch } from '@tauri-apps/plugin-process';
+import { check, Update } from '@tauri-apps/plugin-updater';
+
+export type UpdateStatus =
+  | 'idle'
+  | 'checking'
+  | 'available'
+  | 'downloading'
+  | 'ready'
+  | 'error';
 
 interface UpdateInfo {
   version: string;
@@ -46,7 +53,9 @@ export function useUpdater(): UseUpdaterResult {
       }
     } catch (err) {
       setStatus('error');
-      setError(err instanceof Error ? err.message : 'Failed to check for updates');
+      setError(
+        err instanceof Error ? err.message : 'Failed to check for updates',
+      );
     }
   }, []);
 
@@ -79,7 +88,9 @@ export function useUpdater(): UseUpdaterResult {
       setStatus('ready');
     } catch (err) {
       setStatus('error');
-      setError(err instanceof Error ? err.message : 'Failed to download update');
+      setError(
+        err instanceof Error ? err.message : 'Failed to download update',
+      );
     }
   }, [pendingUpdate]);
 

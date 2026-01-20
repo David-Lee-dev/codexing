@@ -153,7 +153,9 @@ export const SidebarView: React.FC<SidebarViewProps> = memo(
                         d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
                       />
                     </svg>
-                    <p className="text-xs text-ctp-overlay1">No results found</p>
+                    <p className="text-xs text-ctp-overlay1">
+                      No results found
+                    </p>
                   </>
                 )}
               </div>
