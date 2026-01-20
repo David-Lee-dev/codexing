@@ -28,8 +28,10 @@ export const TitleEditor: React.FC = () => {
 
         if (!currentDoc) return;
 
-        const setDocument = getStoreActions().setDocument;
-        setDocument({ ...currentDoc, title: text || null });
+        const title = text || null;
+        const { setDocument, updateTabTitle } = getStoreActions();
+        setDocument({ ...currentDoc, title });
+        updateTabTitle(currentDoc.id, title);
       }, DEBOUNCE_MS),
     [],
   );
@@ -75,6 +77,16 @@ export const TitleEditor: React.FC = () => {
       debouncedUpdate(text);
     },
   });
+
+  useEffect(() => {
+    if (editor && document) {
+      const currentText = editor.getText();
+      const newTitle = document.title ?? '';
+      if (currentText !== newTitle) {
+        editor.commands.setContent(newTitle);
+      }
+    }
+  }, [editor, document?.id]);
 
   return <TitleEditorView editor={editor} />;
 };

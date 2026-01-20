@@ -2,9 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Catppuccin Mocha CSS Variables */
+:root {
+  --ctp-base: #1e1e2e;
+  --ctp-mantle: #181825;
+  --ctp-crust: #11111b;
+  --ctp-surface0: #313244;
+  --ctp-surface1: #45475a;
+  --ctp-surface2: #585b70;
+  --ctp-text: #cdd6f4;
+  --ctp-subtext1: #bac2de;
+  --ctp-subtext0: #a6adc8;
+  --ctp-overlay1: #7f849c;
+  --ctp-lavender: #b4befe;
+  --ctp-blue: #89b4fa;
+  --ctp-mauve: #cba6f7;
+  --ctp-green: #a6e3a1;
+  --ctp-red: #f38ba8;
+}
+
 /* TipTap placeholder styles */
 .tiptap p.is-editor-empty:first-child::before {
-  color: #9ca3af;
+  color: var(--ctp-overlay1);
   content: attr(data-placeholder);
   float: left;
   height: 0;
@@ -21,14 +40,33 @@
   display: none;
 }
 
-/* Prose customizations */
+/* Prose customizations for dark theme */
 .prose {
-  --tw-prose-body: #44403c;
-  --tw-prose-headings: #1c1917;
-  --tw-prose-links: #1c1917;
+  --tw-prose-body: var(--ctp-text);
+  --tw-prose-headings: var(--ctp-text);
+  --tw-prose-links: var(--ctp-lavender);
 }
 
 /* Focus styles */
 .tiptap:focus {
   outline: none;
+}
+
+/* Custom scrollbar for Catppuccin theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ctp-mantle);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ctp-surface1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ctp-surface2);
 }

@@ -5,12 +5,15 @@ import type { Document, Block } from '@/core/types';
 export class DocumentFactory {
   static create(overrides?: Partial<Document>): Document {
     const id = overrides?.id ?? uuidv4();
+    const now = new Date().toISOString();
 
     return {
       id,
       title: null,
       status: 0,
       tags: null,
+      createdAt: now,
+      updatedAt: now,
       blocks: [BlockFactory.create(id)],
       ...overrides,
     };

@@ -54,12 +54,7 @@ pub fn save_config(
         .map_err_log("save_config::get_app_data_path", ConfigError::AppDataPath)?
         .join("config.json");
 
-    let current_config = match read_file(&config_file_path) {
-        Ok(content) => serde_json::from_str(&content)
-            .context("Failed to parse config file JSON")
-            .map_err_log("save_config::parse_json", ConfigError::ConfigParsing)?,
-        Err(_) => AppConfig::default(),
-    };
+    let current_config = load_config(app_handle).unwrap_or_default();
 
     let merged_config = current_config.merge(dto);
 

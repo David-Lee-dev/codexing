@@ -16,18 +16,18 @@ export const MainView: React.FC<MainViewProps> = ({
   }
 
   return (
-    <div className="flex-1 h-full flex flex-col bg-white">
+    <div className="flex-1 h-full flex flex-col bg-ctp-base">
       {/* 에디터 헤더 */}
-      <div className="h-12 px-6 flex items-center justify-between border-b border-stone-100">
+      <div className="h-12 px-6 flex items-center justify-between border-b border-ctp-surface0/60">
         <div className="flex items-center gap-3">
-          <h1 className="text-sm font-medium text-stone-800">
+          <h1 className="text-sm font-medium text-ctp-text">
             {documentTitle || 'Untitled'}
           </h1>
-          <span className="text-[10px] text-stone-400">Saved</span>
+          <span className="text-[10px] text-ctp-overlay1">Saved</span>
         </div>
         <div className="flex items-center gap-2">
           {/* 더보기 버튼 */}
-          <button className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-all">
+          <button className="w-7 h-7 flex items-center justify-center rounded-xl text-ctp-overlay1 hover:text-ctp-text hover:bg-ctp-surface0 transition-all">
             <svg
               className="w-4 h-4"
               fill="none"
@@ -54,13 +54,13 @@ export const MainView: React.FC<MainViewProps> = ({
               type="text"
               placeholder="Untitled"
               defaultValue={documentTitle}
-              className="w-full text-3xl font-bold text-stone-800 placeholder:text-stone-300 outline-none bg-transparent"
+              className="w-full text-3xl font-bold text-ctp-text placeholder:text-ctp-surface2 outline-none bg-transparent"
             />
           </div>
 
           {/* 본문 입력 영역 (더미) */}
-          <div className="prose prose-stone max-w-none">
-            <p className="text-stone-500 text-base leading-relaxed">
+          <div className="prose prose-invert max-w-none">
+            <p className="text-ctp-subtext0 text-base leading-relaxed">
               Start writing your note here...
             </p>
           </div>
@@ -73,12 +73,12 @@ export const MainView: React.FC<MainViewProps> = ({
 // 빈 상태 컴포넌트
 const EmptyState: React.FC = () => {
   return (
-    <div className="flex-1 h-full flex flex-col items-center justify-center bg-stone-50/50">
+    <div className="flex-1 h-full flex flex-col items-center justify-center bg-ctp-base">
       <div className="text-center space-y-4">
         {/* 아이콘 */}
-        <div className="w-16 h-16 mx-auto rounded-2xl bg-stone-100 flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-ctp-surface0 flex items-center justify-center">
           <svg
-            className="w-8 h-8 text-stone-400"
+            className="w-8 h-8 text-ctp-overlay1"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -94,30 +94,30 @@ const EmptyState: React.FC = () => {
 
         {/* 텍스트 */}
         <div>
-          <h2 className="text-lg font-medium text-stone-700 mb-1">
+          <h2 className="text-lg font-medium text-ctp-text mb-1">
             No note selected
           </h2>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-ctp-subtext0">
             Select a note from the sidebar or create a new one
           </p>
         </div>
 
         {/* 단축키 안내 */}
         <div className="flex items-center justify-center gap-4 pt-2">
-          <div className="flex items-center gap-1.5 text-xs text-stone-400">
-            <kbd className="px-1.5 py-0.5 bg-stone-200 rounded text-stone-500 font-mono">
+          <div className="flex items-center gap-1.5 text-xs text-ctp-overlay1">
+            <kbd className="px-1.5 py-0.5 bg-ctp-surface0 rounded-lg text-ctp-subtext1 font-mono">
               ⌘
             </kbd>
-            <kbd className="px-1.5 py-0.5 bg-stone-200 rounded text-stone-500 font-mono">
+            <kbd className="px-1.5 py-0.5 bg-ctp-surface0 rounded-lg text-ctp-subtext1 font-mono">
               N
             </kbd>
             <span>New note</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-stone-400">
-            <kbd className="px-1.5 py-0.5 bg-stone-200 rounded text-stone-500 font-mono">
+          <div className="flex items-center gap-1.5 text-xs text-ctp-overlay1">
+            <kbd className="px-1.5 py-0.5 bg-ctp-surface0 rounded-lg text-ctp-subtext1 font-mono">
               ⌘
             </kbd>
-            <kbd className="px-1.5 py-0.5 bg-stone-200 rounded text-stone-500 font-mono">
+            <kbd className="px-1.5 py-0.5 bg-ctp-surface0 rounded-lg text-ctp-subtext1 font-mono">
               K
             </kbd>
             <span>Search</span>

@@ -1,7 +1,7 @@
-import { BlockFactory } from '@/shared/lib/factory';
 import { documentApi } from '@/shared/api/document.api';
+import { BlockFactory } from '@/shared/lib/factory';
 
-import type { Document, Block } from '@/core/types';
+import type { Block, Document } from '@/core/types';
 import type { StateCreator } from 'zustand';
 
 // ============================================

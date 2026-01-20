@@ -1,4 +1,4 @@
-use crate::domains::document::model::{Block, Document};
+use crate::domains::document::model::{Block, Document, SearchResult};
 use crate::infrastructure::database::query::{query_all, query_one};
 use rusqlite::{Connection, Result};
 
@@ -339,12 +339,231 @@ pub fn find_edges_by_source_id(conn: &Connection, source_id: &str) -> Result<Vec
     )
 }
 
+/// Find related documents in both directions (bidirectional)
+/// Returns (document_id, max_weight) for documents connected either as source or target
+pub fn find_related_documents_bidirectional(
+    conn: &Connection,
+    document_id: &str,
+) -> Result<Vec<(String, f64)>> {
+    query_all(
+        conn,
+        "SELECT DISTINCT doc_id, weight FROM (
+            SELECT target_id as doc_id, weight FROM edges WHERE source_id = ?
+            UNION
+            SELECT source_id as doc_id, weight FROM edges WHERE target_id = ?
+        )
+        ORDER BY weight DESC",
+        rusqlite::params![document_id, document_id],
+        |row| Ok((row.get(0)?, row.get(1)?)),
+    )
+}
+
 pub fn delete_edge(conn: &Connection, source_id: &str, target_id: &str) -> Result<()> {
     conn.execute(
         "DELETE FROM edges WHERE source_id = ? AND target_id = ?",
         [source_id, target_id],
     )?;
     Ok(())
+}
+
+/// Delete edge in both directions if it exists
+pub fn delete_edge_bidirectional(
+    conn: &Connection,
+    source_id: &str,
+    target_id: &str,
+) -> Result<()> {
+    conn.execute(
+        "DELETE FROM edges WHERE (source_id = ? AND target_id = ?) OR (source_id = ? AND target_id = ?)",
+        rusqlite::params![source_id, target_id, target_id, source_id],
+    )?;
+    Ok(())
+}
+
+// ============================================
+// Reindexing Repository
+// ============================================
+
+pub fn reset_all_indexing_status(conn: &Connection) -> Result<u64> {
+    let count = conn.execute("UPDATE blocks SET indexing_status = 0", [])?;
+    Ok(count as u64)
+}
+
+pub fn delete_all_edges(conn: &Connection) -> Result<u64> {
+    let count = conn.execute("DELETE FROM edges", [])?;
+    Ok(count as u64)
+}
+
+pub fn delete_all_vectors(conn: &Connection) -> Result<u64> {
+    let count = conn.execute("DELETE FROM vec_blocks", [])?;
+    Ok(count as u64)
+}
+
+// ============================================
+// Graph Repository
+// ============================================
+
+pub fn find_all_documents_for_graph(
+    conn: &Connection,
+) -> Result<Vec<(String, Option<String>, Option<String>)>> {
+    query_all(
+        conn,
+        "SELECT id, title, tags FROM documents WHERE status != 99",
+        [],
+        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+    )
+}
+
+pub fn find_all_edges(conn: &Connection) -> Result<Vec<(String, String, Option<String>, f64)>> {
+    query_all(
+        conn,
+        "SELECT source_id, target_id, relation_type, weight FROM edges",
+        [],
+        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+    )
+}
+
+// ============================================
+// Search Repository
+// ============================================
+
+pub fn search_documents(conn: &Connection, query: &str, limit: i64) -> Result<Vec<SearchResult>> {
+    let search_pattern = format!("%{}%", query);
+
+    query_all(
+        conn,
+        "WITH ranked_results AS (
+            -- Priority 1: Title match
+            SELECT
+                d.id,
+                d.title,
+                d.tags,
+                d.status,
+                'title' as match_type,
+                d.title as match_snippet,
+                1 as priority,
+                d.updated_at
+            FROM documents d
+            WHERE d.status != 99 AND d.title LIKE ?1
+
+            UNION ALL
+
+            -- Priority 2: Tags match
+            SELECT
+                d.id,
+                d.title,
+                d.tags,
+                d.status,
+                'tag' as match_type,
+                d.tags as match_snippet,
+                2 as priority,
+                d.updated_at
+            FROM documents d
+            WHERE d.status != 99 AND d.tags LIKE ?1
+
+            UNION ALL
+
+            -- Priority 3: Block content match
+            SELECT
+                d.id,
+                d.title,
+                d.tags,
+                d.status,
+                'content' as match_type,
+                SUBSTR(b.content, 1, 100) as match_snippet,
+                3 as priority,
+                d.updated_at
+            FROM documents d
+            JOIN blocks b ON b.document_id = d.id
+            WHERE d.status != 99 AND b.content LIKE ?1
+        ),
+        best_match AS (
+            SELECT
+                id,
+                MIN(priority) as best_priority,
+                MAX(updated_at) as latest_update
+            FROM ranked_results
+            GROUP BY id
+        )
+        SELECT
+            bm.id,
+            (SELECT title FROM ranked_results r WHERE r.id = bm.id LIMIT 1) as title,
+            (SELECT tags FROM ranked_results r WHERE r.id = bm.id LIMIT 1) as tags,
+            (SELECT status FROM ranked_results r WHERE r.id = bm.id LIMIT 1) as status,
+            (SELECT match_type FROM ranked_results r WHERE r.id = bm.id ORDER BY priority ASC LIMIT 1) as match_type,
+            (SELECT match_snippet FROM ranked_results r WHERE r.id = bm.id ORDER BY priority ASC LIMIT 1) as match_snippet
+        FROM best_match bm
+        ORDER BY bm.best_priority ASC, bm.latest_update DESC
+        LIMIT ?2",
+        rusqlite::params![&search_pattern, limit],
+        |row| {
+            let tags_str: Option<String> = row.get(2)?;
+            let tags = tags_str.filter(|s| !s.is_empty()).map(|s| {
+                s.split(',')
+                    .map(|s| s.trim().to_string())
+                    .filter(|s| !s.is_empty())
+                    .collect()
+            });
+
+            Ok(SearchResult {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                tags,
+                status: row.get(3)?,
+                match_type: row.get(4)?,
+                match_snippet: row.get(5)?,
+                similarity_score: None,
+            })
+        },
+    )
+}
+
+pub fn search_by_vector(
+    conn: &Connection,
+    embedding: &[f32],
+    threshold: f32,
+    limit: i64,
+) -> Result<Vec<SearchResult>> {
+    let embedding_bytes: Vec<u8> = embedding.iter().flat_map(|f| f.to_le_bytes()).collect();
+
+    query_all(
+        conn,
+        "SELECT DISTINCT
+            d.id,
+            d.title,
+            d.tags,
+            d.status,
+            MIN(v.distance) as distance
+         FROM vec_blocks v
+         JOIN blocks b ON b.rowid = v.rowid
+         JOIN documents d ON d.id = b.document_id
+         WHERE v.embedding MATCH ?1
+           AND k = ?2
+           AND v.distance < ?3
+           AND d.status != 99
+         GROUP BY d.id
+         ORDER BY distance ASC",
+        rusqlite::params![&embedding_bytes, limit, threshold],
+        |row| {
+            let tags_str: Option<String> = row.get(2)?;
+            let tags = tags_str.filter(|s| !s.is_empty()).map(|s| {
+                s.split(',')
+                    .map(|s| s.trim().to_string())
+                    .filter(|s| !s.is_empty())
+                    .collect()
+            });
+            let distance: f32 = row.get(4)?;
+
+            Ok(SearchResult {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                tags,
+                status: row.get(3)?,
+                match_type: "similar".to_string(),
+                match_snippet: None,
+                similarity_score: Some(1.0 - distance),
+            })
+        },
+    )
 }
 
 // ============================================

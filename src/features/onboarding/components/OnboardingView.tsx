@@ -8,21 +8,21 @@ export interface OnboardingViewProps {
 
 export const OnboardingView: React.FC<OnboardingViewProps> = ({ onStart }) => {
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-onboarding-warm overflow-hidden">
+    <div className="w-screen h-screen flex items-center justify-center bg-ctp-base overflow-hidden">
       {/* 배경 장식 */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-20%] right-[-10%] w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] bg-onboarding-accent/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-30%] left-[-15%] w-[50vw] h-[50vw] max-w-[800px] max-h-[800px] bg-onboarding-accent/3 rounded-full blur-3xl" />
+        <div className="absolute top-[-20%] right-[-10%] w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] bg-ctp-lavender/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-30%] left-[-15%] w-[50vw] h-[50vw] max-w-[800px] max-h-[800px] bg-ctp-mauve/5 rounded-full blur-3xl" />
       </div>
 
       {/* 메인 카드 */}
       <div className="relative z-10 w-full max-w-md mx-4 sm:mx-6 max-h-[calc(100vh-3rem)] flex flex-col opacity-0 animate-card-reveal">
-        <div className="bg-onboarding-cream rounded-2xl shadow-xl shadow-black/5 border border-onboarding-border-subtle p-5 sm:p-7 lg:p-9 flex flex-col min-h-0">
+        <div className="bg-ctp-mantle rounded-2xl shadow-xl shadow-black/20 border border-ctp-surface0 p-5 sm:p-7 lg:p-9 flex flex-col min-h-0">
           {/* 로고/아이콘 */}
           <div className="flex justify-center mb-4 sm:mb-6 opacity-0 animate-fade-up-1 flex-shrink-0">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-onboarding-accent to-onboarding-accent-hover flex items-center justify-center shadow-lg shadow-onboarding-accent/20">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-ctp-lavender to-ctp-blue flex items-center justify-center shadow-lg shadow-ctp-lavender/20">
               <svg
-                className="w-6 h-6 sm:w-7 sm:h-7 text-white"
+                className="w-6 h-6 sm:w-7 sm:h-7 text-ctp-crust"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -39,10 +39,10 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onStart }) => {
 
           {/* 타이틀 */}
           <div className="text-center mb-4 sm:mb-6 opacity-0 animate-fade-up-2 flex-shrink-0">
-            <h1 className="text-xl sm:text-2xl font-semibold text-onboarding-text-primary mb-1 sm:mb-2">
+            <h1 className="text-xl sm:text-2xl font-semibold text-ctp-text mb-1 sm:mb-2">
               Welcome to Memo
             </h1>
-            <p className="text-onboarding-text-secondary text-xs sm:text-sm leading-relaxed">
+            <p className="text-ctp-subtext1 text-xs sm:text-sm leading-relaxed">
               생각을 자유롭게 기록하고 정리하세요.
               <br />
               당신만의 공간이 준비되었습니다.
@@ -115,9 +115,9 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onStart }) => {
             <button
               onClick={onStart}
               className="
-                w-full py-2.5 sm:py-3 rounded-xl font-medium text-white text-sm sm:text-base
-                bg-gradient-to-r from-onboarding-accent to-onboarding-accent-hover
-                hover:shadow-lg hover:shadow-onboarding-accent/25
+                w-full py-2.5 sm:py-3 rounded-xl font-medium text-ctp-crust text-sm sm:text-base
+                bg-gradient-to-r from-ctp-lavender to-ctp-blue
+                hover:shadow-lg hover:shadow-ctp-lavender/25
                 transform hover:-translate-y-0.5
                 transition-all duration-200 ease-out
                 cursor-pointer
@@ -129,7 +129,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onStart }) => {
 
           {/* 저장 위치 선택 안내 */}
           <div className="mt-3 sm:mt-4 text-center opacity-0 animate-fade-up-5 flex-shrink-0">
-            <p className="text-[10px] sm:text-xs text-onboarding-text-muted">
+            <p className="text-[10px] sm:text-xs text-ctp-overlay1">
               시작하면 노트 저장 위치를 선택합니다
             </p>
           </div>
@@ -152,15 +152,15 @@ const FeatureItem: React.FC<FeatureItemProps> = ({
   description,
 }) => {
   return (
-    <div className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3 rounded-xl hover:bg-onboarding-warm/50 transition-colors">
-      <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-onboarding-accent/10 flex items-center justify-center text-onboarding-accent">
+    <div className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3 rounded-xl hover:bg-ctp-surface0/50 transition-colors">
+      <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-ctp-lavender/10 flex items-center justify-center text-ctp-lavender">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="text-xs sm:text-sm font-medium text-onboarding-text-primary">
+        <h3 className="text-xs sm:text-sm font-medium text-ctp-text">
           {title}
         </h3>
-        <p className="text-[10px] sm:text-xs text-onboarding-text-muted mt-0.5">
+        <p className="text-[10px] sm:text-xs text-ctp-overlay1 mt-0.5">
           {description}
         </p>
       </div>

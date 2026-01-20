@@ -15,6 +15,7 @@ export interface TabSliceActions {
   addTab: (tab: Tab) => void;
   switchTab: (tab: Tab) => void;
   popTab: (tab: Tab) => void;
+  updateTabTitle: (documentId: string, title: string | null) => void;
 }
 
 export type TabSlice = TabSliceState & TabSliceActions;
@@ -85,6 +86,18 @@ export const createTabSlice: StateCreator<TabSlice, [], [], TabSlice> = (
       tabs: newTabs,
       activeTab,
       activeDocumentId: activeTab?.documentId,
+    });
+  },
+  updateTabTitle: (documentId: string, title: string | null) => {
+    const currentTabs = get().tabs;
+    const newTabs = currentTabs.map((t) =>
+      t.documentId === documentId ? { ...t, title } : t,
+    );
+    const activeTab = newTabs.find((t) => t.isActive);
+
+    set({
+      tabs: newTabs,
+      activeTab,
     });
   },
 });

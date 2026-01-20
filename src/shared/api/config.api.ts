@@ -43,4 +43,8 @@ export const configApi = {
   async loadDatabase(): Promise<ApiResponse<DatabaseHealth>> {
     return invokeTauri<DatabaseHealth>('load_database');
   },
+
+  async triggerReindexAll(): Promise<ApiResponse<void>> {
+    return invokeTauri<void>('trigger_reindex_all');
+  },
 };

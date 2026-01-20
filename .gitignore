@@ -42,4 +42,6 @@ src-tauri/resources/
 # Exceptions
 !.vscode/extensions.json
 !.vscode/settings.json
-!.vscode/launch.json
+!.vscode/launch.json# Database files
+*.db
+cognitive.db

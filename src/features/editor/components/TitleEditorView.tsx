@@ -13,7 +13,7 @@ export const TitleEditorView: React.FC<TitleEditorViewProps> = ({ editor }) => {
 
   return (
     <div
-      className="mb-8 text-stone-800
+      className="mb-8 text-ctp-text
                  [&_.ProseMirror]:outline-none
                  [&_.ProseMirror]:text-3xl
                  [&_.ProseMirror]:font-bold

@@ -3,6 +3,8 @@ export interface Document {
   title: string | null;
   status: DocumentStatus;
   tags: string[] | null;
+  createdAt: string | null;
+  updatedAt: string | null;
   blocks: Block[];
 }
 

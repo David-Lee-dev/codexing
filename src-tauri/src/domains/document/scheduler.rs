@@ -1,17 +1,18 @@
-use crate::domains::document::model::Block;
+use crate::domains::config::service::load_config;
+use crate::domains::document::model::{Block, EdgeChangeInfo, GraphEdge};
 use crate::domains::document::service;
 use once_cell::sync::Lazy;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
-use tauri::AppHandle;
+use tauri::{AppHandle, Emitter};
 use tokio::sync::Mutex;
 use tokio::time::sleep;
 use tracing::{error, info};
 
 const EMBEDDING_DIMENSION: usize = 384;
-const SIMILARITY_THRESHOLD: f32 = 0.5;
+const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.5;
 const SIMILARITY_SEARCH_LIMIT: i64 = 100;
 
 pub struct IndexingScheduler {
@@ -81,12 +82,16 @@ impl IndexingScheduler {
 
         info!("Processing block: {}", block.id);
 
+        let threshold = load_config(app_handle)
+            .map(|config| config.vector_settings.similarity_threshold)
+            .unwrap_or(DEFAULT_SIMILARITY_THRESHOLD);
+
         // 1. Calculate and save embedding
         let embedding = calculate_embedding(&block);
         service::save_block_vector(app_handle, &block.id, &embedding)?;
 
         // 2. Sync edges for this document
-        self.sync_document_edges(app_handle, &block.document_id, &embedding)?;
+        self.sync_document_edges(app_handle, &block.document_id, &embedding, threshold)?;
 
         service::update_block_indexing_status(app_handle, &block.id, 1)?;
 
@@ -99,37 +104,70 @@ impl IndexingScheduler {
         app_handle: &AppHandle,
         document_id: &str,
         embedding: &[f32],
+        threshold: f32,
     ) -> anyhow::Result<()> {
         // A group: Find similar documents via vector search
         let similar_blocks = service::find_similar_blocks_with_document(
             app_handle,
             embedding,
-            SIMILARITY_THRESHOLD,
+            threshold,
             SIMILARITY_SEARCH_LIMIT,
         )?;
 
-        // Collect unique document IDs from similar blocks (excluding self)
-        let similar_doc_ids: HashSet<String> = similar_blocks
-            .into_iter()
-            .map(|(_, doc_id, _)| doc_id)
-            .filter(|doc_id| doc_id != document_id)
-            .collect();
+        // Count similar blocks per document (excluding self-document)
+        let mut similar_blocks_per_doc: HashMap<String, usize> = HashMap::new();
+        for (_, doc_id, _) in similar_blocks.iter() {
+            if doc_id != document_id {
+                *similar_blocks_per_doc.entry(doc_id.clone()).or_insert(0) += 1;
+            }
+        }
 
-        // B group: Get existing edge target documents
-        let existing_edges = service::find_edges_by_source(app_handle, document_id)?;
+        let similar_doc_ids: HashSet<String> = similar_blocks_per_doc.keys().cloned().collect();
+
+        // B group: Get existing edge documents (both directions)
+        let existing_edges = service::find_related_documents(app_handle, document_id)?;
         let existing_doc_ids: HashSet<String> =
-            existing_edges.into_iter().map(|(target_id, _)| target_id).collect();
+            existing_edges.into_iter().map(|(doc_id, _)| doc_id).collect();
 
-        // Add edges for documents in A but not in B
+        let mut added_edges: Vec<GraphEdge> = Vec::new();
+        let mut removed_edges: Vec<GraphEdge> = Vec::new();
+
+        // Add edges for documents in A but not in B, with weight based on similar block count
         for doc_id in similar_doc_ids.difference(&existing_doc_ids) {
-            service::create_edge(app_handle, document_id, doc_id, Some("similar"), 1.0)?;
-            info!("Edge added: {} -> {}", document_id, doc_id);
+            if let Some(similar_count) = similar_blocks_per_doc.get(doc_id) {
+                let weight = *similar_count as f64 / 10.0; // Normalize to roughly 0.0-1.0 range
+                let weight = weight.min(1.0); // Cap at 1.0
+                service::create_edge(app_handle, document_id, doc_id, Some("similar"), weight)?;
+                info!("Edge added: {} -> {} (weight: {:.2})", document_id, doc_id, weight);
+
+                added_edges.push(GraphEdge {
+                    source: document_id.to_string(),
+                    target: doc_id.clone(),
+                    edge_type: "document-document".to_string(),
+                    weight: Some(weight),
+                });
+            }
         }
 
         // Remove edges for documents in B but not in A
         for doc_id in existing_doc_ids.difference(&similar_doc_ids) {
-            service::delete_edge(app_handle, document_id, doc_id)?;
-            info!("Edge removed: {} -> {}", document_id, doc_id);
+            service::delete_edge_bidirectional(app_handle, document_id, doc_id)?;
+            info!("Edge removed: {} <-> {}", document_id, doc_id);
+
+            removed_edges.push(GraphEdge {
+                source: document_id.to_string(),
+                target: doc_id.clone(),
+                edge_type: "document-document".to_string(),
+                weight: None,
+            });
+        }
+
+        if !added_edges.is_empty() || !removed_edges.is_empty() {
+            let change_info = EdgeChangeInfo {
+                added_edges,
+                removed_edges,
+            };
+            let _ = app_handle.emit("graph-edge-changed", change_info);
         }
 
         Ok(())
@@ -150,11 +188,35 @@ fn calculate_embedding(block: &Block) -> Vec<f32> {
         return embedding;
     }
 
-    for (i, c) in content.chars().enumerate() {
-        let idx = i % EMBEDDING_DIMENSION;
-        embedding[idx] += (c as u32 as f32) / 1000.0;
+    // TF-IDF approach: tokenize and use term frequency
+    let content_lower = content.to_lowercase();
+    let words: Vec<&str> = content_lower
+        .split(|c: char| !c.is_alphanumeric() && c != '\'' && c != '-')
+        .filter(|w| !w.is_empty() && w.len() > 1)
+        .collect();
+
+    if words.is_empty() {
+        return embedding;
     }
 
+    // Count word frequencies
+    let mut word_freq: HashMap<&str, u32> = HashMap::new();
+    for word in words.iter() {
+        *word_freq.entry(word).or_insert(0) += 1;
+    }
+
+    // Calculate TF and hash to embedding dimensions
+    for (word, freq) in word_freq {
+        // Simple hash function: sum of character codes
+        let hash_val: u32 = word.chars().map(|c| c as u32).sum();
+        let idx = (hash_val as usize) % EMBEDDING_DIMENSION;
+
+        // TF weight: log(1 + frequency)
+        let tf_weight = (1.0 + freq as f32).ln();
+        embedding[idx] += tf_weight;
+    }
+
+    // L2 normalization
     let magnitude: f32 = embedding.iter().map(|x| x * x).sum::<f32>().sqrt();
     if magnitude > 0.0 {
         for val in &mut embedding {

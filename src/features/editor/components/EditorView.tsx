@@ -7,15 +7,17 @@ import { Virtuoso } from 'react-virtuoso';
 import { useDocument } from '@/core/store';
 
 import { BlockEditor } from './BlockEditor';
+import { TagEditor } from './TagEditor';
 import { TitleEditor } from './TitleEditor';
 
 const EditorViewComponent: React.FC = () => {
   const document = useDocument();
 
   return (
-    <div className="w-full h-full bg-stone-50 flex flex-col overflow-hidden">
+    <div className="w-full h-full bg-ctp-base flex flex-col overflow-hidden">
       <div className="max-w-3xl mx-auto w-full px-6 py-16 md:px-12 lg:px-16">
         <TitleEditor />
+        <TagEditor />
       </div>
 
       {document!.blocks.length > 0 && (

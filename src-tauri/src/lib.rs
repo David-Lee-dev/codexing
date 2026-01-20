@@ -39,8 +39,16 @@ pub fn run() {
             domains::document::command::get_document,
             domains::document::command::save_document,
             domains::document::command::retrieve_document,
+            domains::document::command::delete_document,
+            domains::document::command::search_documents,
             // Block
             domains::document::command::delete_block,
+            // Reindexing
+            domains::document::command::trigger_reindex_all,
+            // Graph
+            domains::document::command::get_graph_data,
+            // AI
+            domains::ai::command::generate_tags,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
