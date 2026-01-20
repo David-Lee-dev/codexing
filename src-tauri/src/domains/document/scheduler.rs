@@ -1,8 +1,9 @@
 use crate::domains::config::service::load_config;
+use crate::domains::document::embedding::calculate_text_embedding;
 use crate::domains::document::model::{Block, EdgeChangeInfo, GraphEdge};
 use crate::domains::document::service;
 use once_cell::sync::Lazy;
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashSet, HashMap};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
@@ -11,7 +12,6 @@ use tokio::sync::Mutex;
 use tokio::time::sleep;
 use tracing::{error, info};
 
-const EMBEDDING_DIMENSION: usize = 384;
 const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.5;
 const SIMILARITY_SEARCH_LIMIT: i64 = 100;
 
@@ -87,7 +87,7 @@ impl IndexingScheduler {
             .unwrap_or(DEFAULT_SIMILARITY_THRESHOLD);
 
         // 1. Calculate and save embedding
-        let embedding = calculate_embedding(&block);
+        let embedding = calculate_text_embedding(content);
         service::save_block_vector(app_handle, &block.id, &embedding)?;
 
         // 2. Sync edges for this document
@@ -178,53 +178,6 @@ impl Default for IndexingScheduler {
     fn default() -> Self {
         Self::new()
     }
-}
-
-fn calculate_embedding(block: &Block) -> Vec<f32> {
-    let content = block.content.as_deref().unwrap_or("");
-    let mut embedding = vec![0.0f32; EMBEDDING_DIMENSION];
-
-    if content.is_empty() {
-        return embedding;
-    }
-
-    // TF-IDF approach: tokenize and use term frequency
-    let content_lower = content.to_lowercase();
-    let words: Vec<&str> = content_lower
-        .split(|c: char| !c.is_alphanumeric() && c != '\'' && c != '-')
-        .filter(|w| !w.is_empty() && w.len() > 1)
-        .collect();
-
-    if words.is_empty() {
-        return embedding;
-    }
-
-    // Count word frequencies
-    let mut word_freq: HashMap<&str, u32> = HashMap::new();
-    for word in words.iter() {
-        *word_freq.entry(word).or_insert(0) += 1;
-    }
-
-    // Calculate TF and hash to embedding dimensions
-    for (word, freq) in word_freq {
-        // Simple hash function: sum of character codes
-        let hash_val: u32 = word.chars().map(|c| c as u32).sum();
-        let idx = (hash_val as usize) % EMBEDDING_DIMENSION;
-
-        // TF weight: log(1 + frequency)
-        let tf_weight = (1.0 + freq as f32).ln();
-        embedding[idx] += tf_weight;
-    }
-
-    // L2 normalization
-    let magnitude: f32 = embedding.iter().map(|x| x * x).sum::<f32>().sqrt();
-    if magnitude > 0.0 {
-        for val in &mut embedding {
-            *val /= magnitude;
-        }
-    }
-
-    embedding
 }
 
 pub static INDEXING_SCHEDULER: Lazy<IndexingScheduler> = Lazy::new(IndexingScheduler::new);

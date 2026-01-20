@@ -4,7 +4,9 @@ use crate::domains::config::service::{
     init_database as init_database_service, load_config as load_config_service,
     load_database as load_database_service, save_config as save_config_service,
 };
+use crate::domains::document::embedding::initialize_embedding_model;
 use tauri::AppHandle;
+use tracing::warn;
 
 #[tauri::command]
 pub fn load_config(app_handle: AppHandle) -> CommandResponse<AppConfig> {
@@ -45,12 +47,17 @@ pub fn save_config(app_handle: AppHandle, config: AppConfigSaveDto) -> CommandRe
 #[tauri::command]
 pub fn init_database(app_handle: AppHandle) -> CommandResponse<()> {
     match init_database_service(&app_handle) {
-        Ok(_) => CommandResponse {
-            success: true,
-            code: 200,
-            message: "Database initialized successfully".to_string(),
-            data: None,
-        },
+        Ok(_) => {
+            if let Err(e) = initialize_embedding_model(&app_handle) {
+                warn!("Embedding model initialization failed (fallback will be used): {}", e);
+            }
+            CommandResponse {
+                success: true,
+                code: 200,
+                message: "Database initialized successfully".to_string(),
+                data: None,
+            }
+        }
         Err(_) => CommandResponse {
             success: false,
             code: 500,

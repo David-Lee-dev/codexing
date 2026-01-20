@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  # ONNX 모델이 저장된 릴리스 태그
+  MODELS_RELEASE_TAG: 'models-v1'
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+            onnx_file: 'bge_m3_macos_aarch64.onnx'
+          - platform: 'macos-latest'
+            args: '--target x86_64-apple-darwin'
+            onnx_file: 'bge_m3_macos_x86_64.onnx'
+          - platform: 'ubuntu-22.04'
+            args: ''
+            onnx_file: 'bge_m3_linux_x86_64.onnx'
+          - platform: 'windows-latest'
+            args: ''
+            onnx_file: 'bge_m3_windows_x86_64.onnx'
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: 'pnpm'
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Download ONNX model and tokenizer
+        run: |
+          mkdir -p src-tauri/resources/embedding
+          echo "Downloading ONNX model: ${{ matrix.onnx_file }}"
+          curl -L -f -o "src-tauri/resources/embedding/${{ matrix.onnx_file }}" \
+            "https://github.com/${{ github.repository }}/releases/download/${{ env.MODELS_RELEASE_TAG }}/${{ matrix.onnx_file }}"
+          echo "Downloading tokenizer.json"
+          curl -L -f -o "src-tauri/resources/embedding/tokenizer.json" \
+            "https://github.com/${{ github.repository }}/releases/download/${{ env.MODELS_RELEASE_TAG }}/tokenizer.json"
+        shell: bash
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Codexing ${{ github.ref_name }}'
+          releaseBody: 'See the assets to download and install this version.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

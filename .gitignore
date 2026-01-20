@@ -36,12 +36,16 @@ dist-ssr
 # Rust/Tauri
 src-tauri/target/
 src-tauri/gen/
-src-tauri/resources/
 !src-tauri/gen/schemas/
+
+# Large binary resources (download separately)
+src-tauri/resources/
+
+# Database files
+*.db
+cognitive.db
 
 # Exceptions
 !.vscode/extensions.json
 !.vscode/settings.json
-!.vscode/launch.json# Database files
-*.db
-cognitive.db
+!.vscode/launch.json

@@ -34,7 +34,7 @@ pub fn init_schema(conn: &mut Connection) -> rusqlite::Result<()> {
 
     tx.execute(
         "CREATE VIRTUAL TABLE IF NOT EXISTS vec_blocks USING vec0(
-            embedding float[384]
+            embedding float[1024]
         )",
         [],
     )?;

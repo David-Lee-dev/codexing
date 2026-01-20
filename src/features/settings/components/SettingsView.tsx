@@ -5,12 +5,19 @@ import React from 'react';
 import { GEMINI_MODELS } from '@/core/types';
 import { ColorPicker } from '@/shared/ui/ColorPicker';
 
+import type { UpdateStatus } from '@/shared/hooks/useUpdater';
+
 import type {
   GeminiModel,
   GraphColors,
   GraphSettings,
   VectorSettings,
 } from '@/core/types';
+
+interface UpdateInfo {
+  version: string;
+  body: string;
+}
 
 export interface SettingsViewProps {
   isOpen: boolean;
@@ -20,6 +27,11 @@ export interface SettingsViewProps {
   graphSettings: GraphSettings;
   geminiApiKey: string;
   geminiModel: GeminiModel;
+  updateStatus: UpdateStatus;
+  updateProgress: number;
+  updateInfo: UpdateInfo | null;
+  updateError: string | null;
+  currentVersion: string;
   onSimilarityThresholdChange: (value: number) => void;
   onMultiHopLevelChange: (value: number) => void;
   onGeminiApiKeyChange: (value: string) => void;
@@ -28,6 +40,9 @@ export interface SettingsViewProps {
   onSave: () => void;
   onReindexAll: () => void;
   onClose: () => void;
+  onCheckUpdate: () => void;
+  onDownloadUpdate: () => void;
+  onRestartApp: () => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -38,6 +53,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   graphSettings,
   geminiApiKey,
   geminiModel,
+  updateStatus,
+  updateProgress,
+  updateInfo,
+  updateError,
+  currentVersion,
   onSimilarityThresholdChange,
   onMultiHopLevelChange,
   onGeminiApiKeyChange,
@@ -46,6 +66,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onSave,
   onReindexAll,
   onClose,
+  onCheckUpdate,
+  onDownloadUpdate,
+  onRestartApp,
 }) => {
   if (!isOpen) return null;
 
@@ -230,6 +253,156 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Select the Gemini model to use for AI tag generation.
                 </p>
               </div>
+            </div>
+          </section>
+
+          <div className="border-t border-ctp-surface0" />
+
+          <section>
+            <h3 className="text-sm font-medium text-ctp-text mb-4">
+              Updates
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-ctp-subtext1">Current Version</p>
+                  <p className="text-xs text-ctp-overlay1">v{currentVersion}</p>
+                </div>
+                {updateStatus === 'available' && updateInfo && (
+                  <span className="px-2 py-1 text-xs bg-ctp-green/20 text-ctp-green rounded-lg">
+                    v{updateInfo.version} available
+                  </span>
+                )}
+              </div>
+
+              {updateStatus === 'idle' && (
+                <button
+                  onClick={onCheckUpdate}
+                  className="w-full px-4 py-2.5 flex items-center justify-center gap-2 rounded-xl border border-ctp-surface1 text-ctp-text hover:bg-ctp-surface0 transition-all"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                  <span className="text-sm">Check for Updates</span>
+                </button>
+              )}
+
+              {updateStatus === 'checking' && (
+                <div className="w-full px-4 py-2.5 flex items-center justify-center gap-2 rounded-xl border border-ctp-surface1 text-ctp-subtext1">
+                  <svg
+                    className="w-4 h-4 animate-spin"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <span className="text-sm">Checking for updates...</span>
+                </div>
+              )}
+
+              {updateStatus === 'available' && updateInfo && (
+                <div className="space-y-3">
+                  {updateInfo.body && (
+                    <div className="p-3 bg-ctp-surface0 rounded-xl">
+                      <p className="text-xs text-ctp-subtext1 mb-1">
+                        Release Notes:
+                      </p>
+                      <p className="text-xs text-ctp-overlay1 whitespace-pre-wrap">
+                        {updateInfo.body}
+                      </p>
+                    </div>
+                  )}
+                  <button
+                    onClick={onDownloadUpdate}
+                    className="w-full px-4 py-2.5 flex items-center justify-center gap-2 rounded-xl bg-ctp-lavender text-ctp-crust hover:bg-ctp-blue transition-all font-medium"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    <span className="text-sm">Download & Install</span>
+                  </button>
+                </div>
+              )}
+
+              {updateStatus === 'downloading' && (
+                <div className="space-y-2">
+                  <div className="w-full h-2 bg-ctp-surface0 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-ctp-lavender transition-all duration-300"
+                      style={{ width: `${updateProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-ctp-overlay1 text-center">
+                    Downloading update... {updateProgress}%
+                  </p>
+                </div>
+              )}
+
+              {updateStatus === 'ready' && (
+                <button
+                  onClick={onRestartApp}
+                  className="w-full px-4 py-2.5 flex items-center justify-center gap-2 rounded-xl bg-ctp-green text-ctp-crust hover:bg-ctp-teal transition-all font-medium"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  <span className="text-sm">Restart to Apply Update</span>
+                </button>
+              )}
+
+              {updateStatus === 'error' && updateError && (
+                <div className="space-y-2">
+                  <p className="text-xs text-ctp-red">{updateError}</p>
+                  <button
+                    onClick={onCheckUpdate}
+                    className="w-full px-4 py-2.5 flex items-center justify-center gap-2 rounded-xl border border-ctp-surface1 text-ctp-text hover:bg-ctp-surface0 transition-all"
+                  >
+                    <span className="text-sm">Try Again</span>
+                  </button>
+                </div>
+              )}
             </div>
           </section>
 

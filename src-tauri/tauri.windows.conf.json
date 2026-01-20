@@ -1,8 +1,10 @@
 {
+  "$schema": "https://schema.tauri.app/config/2",
   "bundle": {
     "resources": [
-      "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-windows-x86_64.dll",
-      "resources/embedding/bge_m3_windows_x86_64.onnx"
+      "resources/embedding/tokenizer.json",
+      "resources/embedding/bge_m3_windows_x86_64.onnx",
+      "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-windows-x86_64.dll"
     ]
   }
 }
