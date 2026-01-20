@@ -18,16 +18,16 @@ jobs:
       matrix:
         include:
           - platform: 'macos-latest'
-            args: '--target aarch64-apple-darwin'
+            args: '--target aarch64-apple-darwin -c tauri.macos-aarch64.conf.json'
             onnx_file: 'bge_m3_macos_aarch64.onnx'
           - platform: 'macos-latest'
-            args: '--target x86_64-apple-darwin'
+            args: '--target x86_64-apple-darwin -c tauri.macos-x86_64.conf.json'
             onnx_file: 'bge_m3_macos_x86_64.onnx'
           - platform: 'ubuntu-22.04'
-            args: ''
+            args: '-c tauri.linux.conf.json'
             onnx_file: 'bge_m3_linux_x86_64.onnx'
           - platform: 'windows-latest'
-            args: ''
+            args: '-c tauri.windows.conf.json'
             onnx_file: 'bge_m3_windows_x86_64.onnx'
 
     runs-on: ${{ matrix.platform }}

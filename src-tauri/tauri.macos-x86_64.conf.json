@@ -3,8 +3,8 @@
   "bundle": {
     "resources": [
       "resources/embedding/tokenizer.json",
-      "resources/embedding/bge_m3_linux_x86_64.onnx",
-      "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-linux-x86_64.so"
+      "resources/embedding/bge_m3_macos_x86_64.onnx",
+      "resources/sqlite-vec/sqlite-vec-0.1.6-loadable-macos-x86_64.dylib"
     ]
   }
 }
