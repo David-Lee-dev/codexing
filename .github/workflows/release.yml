@@ -8,6 +8,8 @@ on:
 env:
   # ONNX 모델이 저장된 릴리스 태그
   MODELS_RELEASE_TAG: 'models-v1'
+  # ONNX Runtime 버전
+  ORT_VERSION: '1.18.1'
 
 jobs:
   release:
@@ -20,15 +22,27 @@ jobs:
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin -c src-tauri/tauri.macos-aarch64.conf.json'
             onnx_file: 'bge_m3_macos_aarch64.onnx'
+            ort_url: 'https://github.com/microsoft/onnxruntime/releases/download/v1.18.1/onnxruntime-osx-arm64-1.18.1.tgz'
+            ort_lib: 'libonnxruntime.1.18.1.dylib'
+            ort_lib_target: 'libonnxruntime.dylib'
           - platform: 'macos-latest'
             args: '--target x86_64-apple-darwin -c src-tauri/tauri.macos-x86_64.conf.json'
             onnx_file: 'bge_m3_macos_x86_64.onnx'
+            ort_url: 'https://github.com/microsoft/onnxruntime/releases/download/v1.18.1/onnxruntime-osx-x86_64-1.18.1.tgz'
+            ort_lib: 'libonnxruntime.1.18.1.dylib'
+            ort_lib_target: 'libonnxruntime.dylib'
           - platform: 'ubuntu-22.04'
             args: '-c src-tauri/tauri.linux.conf.json'
             onnx_file: 'bge_m3_linux_x86_64.onnx'
+            ort_url: 'https://github.com/microsoft/onnxruntime/releases/download/v1.18.1/onnxruntime-linux-x64-1.18.1.tgz'
+            ort_lib: 'libonnxruntime.so.1.18.1'
+            ort_lib_target: 'libonnxruntime.so'
           - platform: 'windows-latest'
             args: '-c src-tauri/tauri.windows.conf.json'
             onnx_file: 'bge_m3_windows_x86_64.onnx'
+            ort_url: 'https://github.com/microsoft/onnxruntime/releases/download/v1.18.1/onnxruntime-win-x64-1.18.1.zip'
+            ort_lib: 'onnxruntime.dll'
+            ort_lib_target: 'onnxruntime.dll'
 
     runs-on: ${{ matrix.platform }}
 
@@ -72,6 +86,32 @@ jobs:
             "https://github.com/${{ github.repository }}/releases/download/${{ env.MODELS_RELEASE_TAG }}/tokenizer.json"
         shell: bash
 
+      - name: Download ONNX Runtime library (Unix)
+        if: matrix.platform != 'windows-latest'
+        run: |
+          mkdir -p src-tauri/resources/onnxruntime
+          echo "Downloading ONNX Runtime from: ${{ matrix.ort_url }}"
+          curl -L -f -o ort.tgz "${{ matrix.ort_url }}"
+          tar -xzf ort.tgz
+          ORT_DIR=$(ls -d onnxruntime-*)
+          cp "$ORT_DIR/lib/${{ matrix.ort_lib }}" "src-tauri/resources/onnxruntime/${{ matrix.ort_lib_target }}"
+          echo "ONNX Runtime library copied to src-tauri/resources/onnxruntime/"
+          ls -la src-tauri/resources/onnxruntime/
+        shell: bash
+
+      - name: Download ONNX Runtime library (Windows)
+        if: matrix.platform == 'windows-latest'
+        run: |
+          mkdir -p src-tauri/resources/onnxruntime
+          echo "Downloading ONNX Runtime from: ${{ matrix.ort_url }}"
+          curl -L -f -o ort.zip "${{ matrix.ort_url }}"
+          unzip -o ort.zip
+          $ORT_DIR = Get-ChildItem -Directory -Name "onnxruntime-*"
+          Copy-Item "$ORT_DIR\lib\${{ matrix.ort_lib }}" "src-tauri\resources\onnxruntime\${{ matrix.ort_lib_target }}"
+          echo "ONNX Runtime library copied to src-tauri/resources/onnxruntime/"
+          Get-ChildItem src-tauri/resources/onnxruntime/
+        shell: pwsh
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -81,7 +121,24 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Codexing ${{ github.ref_name }}'
-          releaseBody: 'See the assets to download and install this version.'
+          releaseBody: |
+            ## 설치 방법
+
+            ### macOS
+            1. DMG 파일 다운로드
+            2. 마운트 후 Applications 폴더로 드래그
+            3. **중요**: 처음 실행 시 "손상됨" 오류가 발생하면 터미널에서 다음 명령 실행:
+               ```bash
+               xattr -cr /Applications/codexing.app
+               ```
+
+            ### Windows
+            - MSI 또는 NSIS 설치 파일 다운로드 후 실행
+
+            ### Linux
+            - **AppImage**: 실행 권한 부여 후 실행 (`chmod +x codexing_*.AppImage`)
+            - **Debian/Ubuntu**: `sudo dpkg -i codexing_*.deb`
+            - **Fedora/RHEL**: `sudo rpm -i codexing-*.rpm`
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

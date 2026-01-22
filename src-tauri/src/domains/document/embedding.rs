@@ -1,12 +1,14 @@
 use once_cell::sync::Lazy;
 use ort::session::{builder::GraphOptimizationLevel, Session};
-use std::sync::Mutex;
+use std::sync::{Mutex, Once};
 use tauri::{path::BaseDirectory, AppHandle, Manager};
 use tokenizers::Tokenizer;
 use tracing::{error, info, warn};
 
 pub const EMBEDDING_DIMENSION: usize = 1024;
 const MAX_SEQUENCE_LENGTH: usize = 512;
+
+static ORT_INIT: Once = Once::new();
 
 struct EmbeddingModel {
     session: Option<Session>,
@@ -52,11 +54,64 @@ fn get_onnx_filename() -> &'static str {
     compile_error!("Unsupported platform");
 }
 
+fn get_ort_dylib_filename() -> &'static str {
+    #[cfg(target_os = "macos")]
+    return "libonnxruntime.dylib";
+
+    #[cfg(target_os = "windows")]
+    return "onnxruntime.dll";
+
+    #[cfg(target_os = "linux")]
+    return "libonnxruntime.so";
+
+    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
+    compile_error!("Unsupported platform");
+}
+
+fn initialize_ort_runtime(app_handle: &AppHandle) -> Result<(), String> {
+    let dylib_path = app_handle
+        .path()
+        .resolve(
+            format!("resources/onnxruntime/{}", get_ort_dylib_filename()),
+            BaseDirectory::Resource,
+        )
+        .map_err(|e| format!("Failed to resolve ONNX Runtime library path: {}", e))?;
+
+    if !dylib_path.exists() {
+        return Err(format!("ONNX Runtime library not found: {:?}", dylib_path));
+    }
+
+    info!("Loading ONNX Runtime from: {:?}", dylib_path);
+
+    let dylib_path_str = dylib_path
+        .to_str()
+        .ok_or_else(|| "Invalid ONNX Runtime library path".to_string())?;
+
+    ort::init_from(dylib_path_str)
+        .commit()
+        .map_err(|e| format!("Failed to initialize ONNX Runtime: {}", e))?;
+
+    Ok(())
+}
+
 pub fn initialize_embedding_model(app_handle: &AppHandle) -> Result<(), String> {
     let mut model = EMBEDDING_MODEL.lock().map_err(|e| e.to_string())?;
 
     if model.initialized {
         return Ok(());
+    }
+
+    // Initialize ONNX Runtime with dynamic loading (only once)
+    let app_handle_clone = app_handle.clone();
+    let mut init_error: Option<String> = None;
+    ORT_INIT.call_once(|| {
+        if let Err(e) = initialize_ort_runtime(&app_handle_clone) {
+            init_error = Some(e);
+        }
+    });
+
+    if let Some(e) = init_error {
+        return Err(e);
     }
 
     let onnx_path = app_handle
